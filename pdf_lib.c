@@ -2,7 +2,6 @@
 #include <string.h>
 #include <stdlib.h>
 #include <ctype.h>
-#include <zlib.h>
 #include "pdf_lib.h"
 #include "pdf_parser.h"
 #include "fileio.h"

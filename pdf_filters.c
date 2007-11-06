@@ -4,9 +4,11 @@
 #include <string.h>
 #include <stdlib.h>
 #include <ctype.h>
-#include <zlib.h>
 
 #ifdef HAVE_ZLIB
+
+#include <zlib.h>
+
 int zlib_decompress_filter(char ** stream, long  * len, pdf_object * dict){
 	char * new_stream_content;
 	long new_stream_len;
@@ -79,6 +81,7 @@ int lzw_raw_get_ch(unsigned char * buf,size_t len,size_t * index, size_t * offse
 	if (*index == len){
 		return EOF;
 	}
+	printf(">><< %u %u %u\n",*index,*offset,length);
 	out = ( (1<<(8 - *offset)) - 1) & buf[*index];
 /*
 	if (length<=(8-*offset)){
@@ -129,6 +132,7 @@ void lzw_clear_dict(struct lzw_dict dict[DICT_LEN], size_t alpha_len){
 		message(FATAL,"Bad LZW stream - expected clear-table code\n");\
 		return -1;\
 	}\
+	printf("%u,%u, %u\n",prev_word,word,d_index);\
 	switch (d_index){\
 		case 511:\
 			w_size=10;\
@@ -156,6 +160,22 @@ void lzw_put_prefix(int word, struct lzw_dict dict[DICT_LEN], char ** out, int *
 		
 	if (dict[word].len<=0){
 		printf("Prefix %u isn't in dict\n",word);
+		{
+			int i;
+			char ch;
+			for(i=0;i<*index;++i){
+				ch = (*out)[i];
+				if (ch=='\r'){
+					putc(' ',stdout);
+				}
+				else{
+					putc(ch,stdout);
+				}
+			}
+			putc('\n',stdout);
+			fflush(stdout);
+		}
+
 		return;
 	}
 	if (dict[word].len == 1){
@@ -198,6 +218,7 @@ int lzw_decompress_filter(char ** stream, long  * len, pdf_object * dict){
 	do{
 		offset = 0;
 		word = lzw_raw_get_ch((unsigned char *)*stream,*len,&index,&offset,w_size);
+		printf("<>%d\n",word);
 	}while(word != EOF && word != LZW_CL_DICT);
 
 	if (word == EOF){
@@ -219,6 +240,7 @@ int lzw_decompress_filter(char ** stream, long  * len, pdf_object * dict){
 		}	
 		prev_word = word;
 		word = lzw_raw_get_ch((unsigned char *)*stream,*len,&index,&offset,w_size);
+		printf("<>%d\n",word);
 	}while(word != EOF && word != LZW_END_STREAM);
 
 

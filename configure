@@ -15,8 +15,6 @@ help() {
 	echo "	--without-zlib	Disable usage of zlib"
 	echo "	--with-lzw	Enables usage of lzw"
 	echo "	--without-lzw	Disable usage of lzw"
-	echo ""
-	exit 0
 }
 
 
@@ -47,11 +45,12 @@ int main(void) {
 	printf("Hello World!");
 	return 0;
 }' > test.c
-if [ "${ZLIB}" ] && gcc -o test test.c -lz; then
+if [ "${ZLIB}" ] && gcc -o test test.c -lz > /dev/null 2>&1; then
 	echo "Ok"
 	echo '#define HAVE_ZLIB 1' >> config.h
 else
 	if [ "${ZLIB}" ]; then
+		ZLIB=""
 		echo "Failed"
 	else
 		echo "Disabled"
@@ -76,7 +75,7 @@ echo "#
 #
 
 CFLAGS = ${DEBUG} -c  -Wall -ansi -std=gnu99" > Makefile
-if [ "$ZLIB" ]; then
+if [ "${ZLIB}" ]; then
 	echo 'LDFLAGS = -lm -lz' >> Makefile
 else
 	echo 'LDFLAGS = -lm' >> Makefile
