@@ -1,13 +1,3 @@
-# 
-# Projekt:   pspdftool
-# Autor:     Ales Snuparek
-# Datum:
-#
-
-CFLAGS = -c  -Wall -D _DEBUG -g -ansi -std=gnu99    #pg pro profiler #parametry prekladace
-LDFLAGS = -lm -lz 
-CC=gcc				#prekladac jazyka C
-prefix=/usr/local
 PREFIX=${prefix}
 DESTDIR=${PREFIX}/bin
 mandir=${PREFIX}/share/man

@@ -1,0 +1,89 @@
+#!/bin/sh
+
+PREFIX=/usr/local
+ZLIB="enabled"
+LZW=""
+
+help() {
+	echo "Usage:"
+	echo "	./configure [OPTIONS]"
+	echo ""
+	echo "Options:"
+	echo "	--prefix=PATH	Sets instalation prefix to PATH"
+	echo "	--debug		Enables debuging"
+	echo "	--with-zlib	Enables usage of zlib"
+	echo "	--without-zlib	Disable usage of zlib"
+	echo "	--with-lzw	Enables usage of lzw"
+	echo "	--without-lzw	Disable usage of lzw"
+	echo ""
+	exit 0
+}
+
+
+while [ "$1" ]; do
+	case "$1" in
+		--prefix*)	PREFIX="`echo "$1" | sed 's/^--prefix=//'`" ;;
+		--with-zlib)	ZLIB="enabled" ;;
+		--without-zlib)	ZLIB="" ;;
+		--with-lzw)	LZW="enabled" ;;
+		--without-lzw)	LZW="" ;;
+		--debug)	DEBUG=" -g -D _DEBUG " ;;
+		*)		help ;;
+	esac
+	shift
+done
+
+echo '#ifndef _CONFIG_H_
+#define _CONFIG_H_' > config.h
+
+echo "Prefix is set to ${PREFIX}"
+
+echo -n "Checking for zlib..."
+
+echo '#include <stdio.h>
+#include <zlib.h>
+
+int main(void) {
+	printf("Hello World!");
+	return 0;
+}' > test.c
+if [ "${ZLIB}" ] && gcc -o test test.c -lz; then
+	echo "Ok"
+	echo '#define HAVE_ZLIB 1' >> config.h
+else
+	if [ "${ZLIB}" ]; then
+		echo "Failed"
+	else
+		echo "Disabled"
+	fi
+fi
+rm -f test test.c
+
+echo -n "Checking for lzw..."
+if [ "${LZW}" ]; then
+	echo "Ok"
+	echo '#define HAVE_LZW 1' >> config.h
+else
+	echo "Disabled"
+fi
+
+echo '#endif' >> config.h
+
+echo "# 
+# Projekt:   pspdftool
+# Autor:     Ales Snuparek
+# Datum:
+#
+
+CFLAGS = ${DEBUG} -c  -Wall -ansi -std=gnu99" > Makefile
+if [ "$ZLIB" ]; then
+	echo 'LDFLAGS = -lm -lz' >> Makefile
+else
+	echo 'LDFLAGS = -lm' >> Makefile
+fi
+echo "prefix=${PREFIX}" >> Makefile
+cat ./Makefile.tail >> Makefile
+
+echo
+echo "Configuration complete, use make to compile it ;-)"
+echo
