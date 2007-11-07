@@ -257,7 +257,7 @@ int pages_nup(page_list_head * p_doc,int x,int y, dimensions * bbox,
 		case 2:
 			x=1;
 			y=2;
-			rotate=90;
+			rotate = rotate?rotate:90;
 			break;
 		case 4:
 			x=2;

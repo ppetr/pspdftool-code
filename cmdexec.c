@@ -797,14 +797,21 @@ int cmd_exec_command_(page_list_head * p_doc,cmd_ent_struct * cmd,int index){
 
 static int cmd_exec_command(page_list_head * p_doc, cmd_ent_struct * cmd){
 	int index;
+	int fail = 0;
 	for(index=0;cmd_commands[index].str;++index){
 		if(strcmp(cmd_commands[index].str,cmd->cmd_id)==0){
 			if(cmd_exec_command_(p_doc,cmd,index)==0){
 				return 0;
-			}		
+			}
+			fail = 1;
 		}
 	}
-	message(FATAL,"Unknown command \"%s\".\n",cmd->cmd_id);
+	if (fail){
+		message(FATAL,"There were some errors during executing command \"%s\". Check command args.\n",cmd->cmd_id);
+	}
+	else{
+		message(FATAL,"Unknown command \"%s\".\n",cmd->cmd_id);
+	}
 	return -1;
 }
 
