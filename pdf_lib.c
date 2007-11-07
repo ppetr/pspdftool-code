@@ -665,22 +665,18 @@ static int pdf_get_boundaries(dimensions * dim, pdf_object * obj){
 		if (!isInt(arr->obj) && !isReal(arr->obj)){
 			message(FATAL,"type isn't number\n");
 		}
-		/*pozor ztrata presnosti*/
-		if (isReal(arr->obj)){
-			arr->obj->val.int_number=arr->obj->val.real_number;
-		}
 		switch(i){
 			case 1:
-				dim->left.x=arr->obj->val.int_number;
+				dim->left.x = (isReal(arr->obj))?(arr->obj->val.real_number):(arr->obj->val.int_number);
 				break;
 			case 2:
-				dim->left.y=arr->obj->val.int_number;
+				dim->left.y = (isReal(arr->obj))?(arr->obj->val.real_number):(arr->obj->val.int_number);
 				break;
 			case 3:
-				dim->right.x=arr->obj->val.int_number;
+				dim->right.x = (isReal(arr->obj))?(arr->obj->val.real_number):(arr->obj->val.int_number);
 				break;
 			case 4:
-				dim->right.y=arr->obj->val.int_number;
+				dim->right.y = (isReal(arr->obj))?(arr->obj->val.real_number):(arr->obj->val.int_number);
 				break;
 			default:
 				message(FATAL,"wrong boundaries\n");
@@ -710,8 +706,8 @@ static int _getPdfPages(page_list_head * p_doc,MYFILE *f, int major, int minor){
 	pdf_object * pobj, * pomobj, * kids;
 	pdf_object * resources, * next_page, *tmp, *resources_tmp;
 	pdf_array * arr;
-	static dimensions bbox = {{0,0},{0,0}};
-	static dimensions paper = {{0,0},{0,0}};
+	dimensions bbox = {{0,0},{0,0}};
+	dimensions paper = {{0,0},{0,0}};
 
 	get_object_(pobj,p_pdf,major,minor);
 	pomobj=pdf_get_dict_name_value(pobj,"Type");
@@ -768,22 +764,25 @@ static int _getPdfPages(page_list_head * p_doc,MYFILE *f, int major, int minor){
 	/*Page leaf*/
 	if (strcmp("Page",pomobj->val.name)==0){
 		page_list * new_page;
-		/*pdf_object * stream;*/
 		pdf_page_handle * content;
 		new_page=page_new(NULL,0);
 		new_page->page->type=p_doc->doc->type;
-		if (pdf_get_dict_name_value(pobj,"MediaBox")==NULL){
-			pdf_set_boundaries(&p_doc->doc->paper,pdf_add_dict_name_value(pobj,"MediaBox"));
+
+		if (pdf_get_boundaries(&new_page->page->paper,pdf_get_dict_name_value(pobj,"MediaBox")) == -1) {
 			copy_dimensions(&new_page->page->paper,&p_doc->doc->paper);
-			copy_dimensions(&new_page->page->bbox,&p_doc->doc->bbox);
-		}
-		else{
-			pdf_get_boundaries(&new_page->page->paper,pdf_get_dict_name_value(pobj,"MediaBox"));
+			pdf_set_boundaries(&new_page->page->paper,pdf_add_dict_name_value(pobj,"MediaBox"));
 		}
 
 		if (pdf_get_boundaries(&new_page->page->bbox,pdf_get_dict_name_value(pobj,"TrimBox")) == -1){
 			if (pdf_get_boundaries(&new_page->page->bbox,pdf_get_dict_name_value(pobj,"BleedBox")) == -1){
-				pdf_get_boundaries(&new_page->page->bbox,pdf_get_dict_name_value(pobj,"CropBox"));
+				if (pdf_get_boundaries(&new_page->page->bbox,pdf_get_dict_name_value(pobj,"CropBox"))==-1){
+					if (isdimzero(p_doc->doc->bbox)){
+						copy_dimensions(&new_page->page->bbox,&new_page->page->paper);
+					}
+					else{
+						copy_dimensions(&new_page->page->bbox,&new_page->page->bbox);
+					}
+				}
 			}
 		}
 
@@ -796,30 +795,6 @@ static int _getPdfPages(page_list_head * p_doc,MYFILE *f, int major, int minor){
 		content->number=pages_count(p_doc);
 		new_page->page->page=content;
 		pages_list_add_page(p_doc,new_page,pg_add_end);
-		if (pdf_get_dict_name_value(pobj,"MediaBox")==NULL){
-			pdf_object * pom_obj = pdf_add_dict_name_value(pobj,"MediaBox");
-			pdf_set_boundaries(&p_doc->doc->paper,pom_obj);
-
-		}
-		#if 0
-		/*bad idea*/
-
-		pomobj=pdf_get_dict_name_value(pobj,"Contents");
-		if (isRef(pomobj)){
-			get_object_(stream,p_pdf, pomobj->val.reference.major, pomobj->val.reference.minor);
-			if (isStream(stream)){
-				if (pdf_get_dict_name_value(stream->val.stream.dict,"Filter")==NULL){
-					content->compressed=0;
-				}
-			}
-		}
-		#endif
-
-		/*pdf_page_to_xobj(new_page->page);*/
-		/*DEBUG*/
-		/* printf("[%d]\n",pages_count(p_doc));
-		 fflush(stdout);*/
-		/*DEBUG*/
 		return 0;
 	}
 	message(FATAL,"Object isn't Page or Pages\n");
@@ -1261,7 +1236,7 @@ static int pdf_page_to_xobj(page_handle * pg_handle){
 
 	/*get_page_object*/
 	get_object_(pg,p_pdf,page->major,page->minor);
-	
+
 /*	pdf_set_boundaries(&pg_handle->paper,pdf_add_dict_name_value(pg,"MediaBox"));*/
 	
 	/*create new_page object*/
@@ -1286,7 +1261,7 @@ static int pdf_page_to_xobj(page_handle * pg_handle){
 	
 	pom=pdf_get_dict_name_value(pg,"Contents");
 	if (pom==NULL){
-		message(FATAL,"The page sochould have content.\n");
+		message(FATAL,"The page should have content.\n");
 	}
 	switch (pom->type){
 		case PDF_OBJ_INDIRECT_REF:
