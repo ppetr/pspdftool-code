@@ -1,6 +1,7 @@
 #include "pdf_filters.h"
+#include "pdf_lib.h"
+#include "pdf_parser.h"
 #include "common.h"
-#include "pdf_filters.h"
 #include <string.h>
 #include <stdlib.h>
 #include <ctype.h>
@@ -76,12 +77,11 @@ struct lzw_dict{
 
 enum { LZW_CL_DICT = 256, LZW_END_STREAM = 257 };
 
-int lzw_raw_get_ch(unsigned char * buf,size_t len,size_t * index, size_t * offset,size_t length){
+static int lzw_raw_get_ch(unsigned char * buf,size_t len,size_t * index, size_t * offset,size_t length){
 	int out;
 	if (*index == len){
 		return EOF;
 	}
-	printf(">><< %u %u %u\n",*index,*offset,length);
 	out = ( (1<<(8 - *offset)) - 1) & buf[*index];
 /*
 	if (length<=(8-*offset)){
@@ -112,7 +112,7 @@ int lzw_raw_get_ch(unsigned char * buf,size_t len,size_t * index, size_t * offse
 	return out;
 }
 
-void lzw_clear_dict(struct lzw_dict dict[DICT_LEN], size_t alpha_len){
+static void lzw_clear_dict(struct lzw_dict dict[DICT_LEN], size_t alpha_len){
 	int i;
 	for (i=0;i<alpha_len;++i){
 		dict[i].symbol = i;
@@ -129,53 +129,50 @@ void lzw_clear_dict(struct lzw_dict dict[DICT_LEN], size_t alpha_len){
 
 #define lzw_add_prefix(dict,prev_word,word,d_index) do{\
 	if (d_index>DICT_LEN){\
-		message(FATAL,"Bad LZW stream - expected clear-table code\n");\
+		message(WARN,"Bad LZW stream - expected clear-table code\n");\
 		return -1;\
 	}\
-	printf("%u,%u, %u\n",prev_word,word,d_index);\
-	switch (d_index){\
-		case 511:\
-			w_size=10;\
-			break;\
-		case 1023:\
-			w_size=11;\
-			break;\
-		case 2047:\
-			  w_size=12;\
-			assert(0);\
-			break;\
+	if (word<d_index && word>=0){\
+		lzw_dict[d_index].symbol = word;\
+		lzw_dict[d_index].prev = prev_word;\
+		lzw_dict[d_index].len = dict[prev_word].len + 1;\
+			prev_word=word;\
+			while (lzw_dict[prev_word].prev){\
+				prev_word = lzw_dict[prev_word].prev;\
+			}\
+			lzw_dict[d_index].symbol = prev_word;\
 	}\
-	lzw_dict[d_index].symbol = word;\
-	lzw_dict[d_index].prev = prev_word;\
-	lzw_dict[d_index].len = dict[prev_word].len + 1;\
+	else{\
+		if (word==d_index){\
+			lzw_dict[d_index].prev = prev_word;\
+			lzw_dict[d_index].len = dict[prev_word].len + 1;\
+			while (lzw_dict[prev_word].prev){\
+				prev_word = lzw_dict[prev_word].prev;\
+			}\
+			lzw_dict[d_index].symbol = prev_word;\
+		}\
+		else{\
+			message(WARN,"Bad LZW stream - unexpected code\n");\
+			return -1;\
+		}\
+	}\
 	++d_index;\
+	switch (d_index + early){\
+	case 512:\
+		w_size=10;\
+		break;\
+	case 1024:\
+		w_size=11;\
+		break;\
+	case 2048:\
+		  w_size=12;\
+		break;\
+	}\
 }while(0)
 
-void lzw_put_prefix(int word, struct lzw_dict dict[DICT_LEN], char ** out, int * len, int * index){
+static void lzw_put_prefix(int word, struct lzw_dict dict[DICT_LEN], char ** out, int * len, int * index){
 	char * tmp;
-	if ( word>DICT_LEN ||  word<0){
-		printf("Put prefix err.\n");
-		return;
-	}
-		
-	if (dict[word].len<=0){
-		printf("Prefix %u isn't in dict\n",word);
-		{
-			int i;
-			char ch;
-			for(i=0;i<*index;++i){
-				ch = (*out)[i];
-				if (ch=='\r'){
-					putc(' ',stdout);
-				}
-				else{
-					putc(ch,stdout);
-				}
-			}
-			putc('\n',stdout);
-			fflush(stdout);
-		}
-
+	if ( word>DICT_LEN ||  word<0 || dict[word].len<=0){
 		return;
 	}
 	if (dict[word].len == 1){
@@ -186,6 +183,7 @@ void lzw_put_prefix(int word, struct lzw_dict dict[DICT_LEN], char ** out, int *
 				*out = tmp;
 			}
 			else{
+				/*there can fail realloc, fixme*/
 				*len /=2;
 				assert(0);
 				return;
@@ -209,16 +207,23 @@ int lzw_decompress_filter(char ** stream, long  * len, pdf_object * dict){
 	char * out_buf;
 	int out_len = 3 * (*len);
 	int out_index = 0;
+	int early = 1;
+	pdf_object * early_val;
 
 	out_buf = (char *) malloc(sizeof(char) * out_len);
-	assert(out_buf!=NULL);
-		
+	assert(out_buf!=NULL);		
+
+	early_val = pdf_get_dict_name_value(dict,"EarlyChange");
+	if (early_val!=NULL && early_val->type == PDF_OBJ_INT){
+		early = early_val->val.int_number;	
+	}
+
 	index = 0;
 	w_size = 9;
+
 	do{
 		offset = 0;
 		word = lzw_raw_get_ch((unsigned char *)*stream,*len,&index,&offset,w_size);
-		printf("<>%d\n",word);
 	}while(word != EOF && word != LZW_CL_DICT);
 
 	if (word == EOF){
@@ -233,21 +238,19 @@ int lzw_decompress_filter(char ** stream, long  * len, pdf_object * dict){
 			w_size=9;
 		}
 		else{
-			lzw_put_prefix(word,lzw_dict,&out_buf,&out_len,&out_index);
 			if (prev_word!=LZW_CL_DICT){
 				lzw_add_prefix(lzw_dict,prev_word,word,d_index);	
 			}
+			lzw_put_prefix(word,lzw_dict,&out_buf,&out_len,&out_index);
 		}	
 		prev_word = word;
 		word = lzw_raw_get_ch((unsigned char *)*stream,*len,&index,&offset,w_size);
-		printf("<>%d\n",word);
 	}while(word != EOF && word != LZW_END_STREAM);
 
 
 	*len = out_index;
 	free(*stream);
 	*stream = out_buf;
-	/*return -1;*/
 	return 0;
 	
 }

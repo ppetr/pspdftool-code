@@ -2,7 +2,7 @@
 
 PREFIX=/usr/local
 ZLIB="enabled"
-LZW=""
+LZW="enabled"
 
 help() {
 	echo "Usage:"
@@ -15,6 +15,8 @@ help() {
 	echo "	--without-zlib	Disable usage of zlib"
 	echo "	--with-lzw	Enables usage of lzw"
 	echo "	--without-lzw	Disable usage of lzw"
+	echo ""
+        exit 0
 }
 
 

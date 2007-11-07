@@ -264,7 +264,45 @@ int pages_nup(page_list_head * p_doc,int x,int y, dimensions * bbox,
 			y=2;
 			break;
 		default:
-			return -1;
+			{
+				int n, k;
+				/* k*k ==x*/
+				for(k=1;k*k<x;++k);
+
+				if (k*k==x){
+					x =k;
+					y =k;
+					break;
+				}
+				
+				k = 0; 
+				n = x;
+				do{
+					if ( (n & 0x1)){
+						if (n != 0x1){
+							/*isn't n!=2^k*/
+							return -1;
+						}
+						break;
+					}
+					if (n==0){
+						return -1;
+					}
+					n = n >> 1;
+					++k;
+				} while (1);
+
+				if (k%2){
+					x = 1<<(k/2);
+					y = 1<<(k/2 +1);
+					rotate = rotate?rotate:90;
+				}
+				else{
+					x = 1<<(k/2);
+					y = 1<<(k/2);
+				}
+			}
+			
 		}
 	}
 
