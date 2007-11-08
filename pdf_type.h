@@ -30,8 +30,8 @@ typedef struct pdf_object_table{
 /**\brief zaznam pro hlavicku dokumentu*/
 typedef struct pdf_doc_handle {
 	pdf_object * trailer; /**<ukazatel na trailer*/
-	int v_major; /**<major verze PDF*/
-	int v_minor; /**<minor verze PDF*/
+	long v_major; /**<major verze PDF*/
+	long v_minor; /**<minor verze PDF*/
 	int refcounter;/**<pocet referenci na strukturu*/
 	pdf_object_table table; /**<tabulka odkazu na obekty v dokumentu*/
 	page_list_head * p_doc; /**<ukazatel na hlavu seznamu stranek*/

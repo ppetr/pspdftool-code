@@ -220,8 +220,8 @@ static param cmd_nup_params[] = {{"x",CMD_TOK_INT,CMD_TOK_UNKNOWN,0,0,NULL},
 				 {"paper",CMD_TOK_ID,CMD_TOK_ID,0,0,NULL},
 				 {"frame",CMD_TOK_INT,CMD_TOK_INT,0,0,NULL},
 				 {"center",CMD_TOK_INT,CMD_TOK_INT,1,0,NULL}};
-static param cmd_text_params[] = {{"x",CMD_TOK_INT,CMD_TOK_UNKNOWN,0,0,NULL},
-				 {"y",CMD_TOK_INT,CMD_TOK_UNKNOWN,0,0,NULL},
+static param cmd_text_params[] = {{"x",CMD_TOK_MESURE,CMD_TOK_UNKNOWN,0,0,NULL},
+				 {"y",CMD_TOK_MESURE,CMD_TOK_UNKNOWN,0,0,NULL},
 				 {"text",CMD_TOK_STR,CMD_TOK_UNKNOWN,0,0,NULL},
 				 {"font",CMD_TOK_STR,CMD_TOK_STR,0,0,NULL},
 				 {"size",CMD_TOK_INT,CMD_TOK_INT,10,0,NULL}};
@@ -1434,7 +1434,7 @@ static int cmd_merge(page_list_head * p_doc, param params[], cmd_page_list_head 
 }
 
 static int cmd_text(page_list_head * p_doc, param params[], cmd_page_list_head * pages){
-	return pages_text(p_doc,params[0].int_number,params[1].int_number,
+	return pages_text(p_doc,params[0].real_number,params[1].real_number,
 			params[2].str,params[3].str,params[4].int_number);
 }
 

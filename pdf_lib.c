@@ -1051,7 +1051,7 @@ int pdf_save(page_list_head * p_doc, const char * filename){
 			
 		}
 	}
-	fprintf(f,"%%PDF-%d.%d\n",get_pdf_handle(p_doc)->v_major,get_pdf_handle(p_doc)->v_minor);
+	fprintf(f,"%%PDF-%ld.%ld\n",get_pdf_handle(p_doc)->v_major,get_pdf_handle(p_doc)->v_minor);
 	fprintf(f,binary);
 
 
@@ -1363,7 +1363,7 @@ static int pdf_page_to_xobj(page_handle * pg_handle){
 
 	/*create new_page contents*/
 	contents=pdf_new_object();
-	asprintf(&str,"<</Length %d\n>>\nstream\n%s\nendstream",strlen(stream_content),stream_content);
+	asprintf(&str,"<</Length %lu\n>>\nstream\n%s\nendstream",strlen(stream_content),stream_content);
 	free(stream_content);
 	assert(pdf_get_object_from_str(contents, str)==0);
 	free(str);

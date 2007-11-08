@@ -1,1 +1,5 @@
-just write "make && make install"
+write "./configure" and "make && make install"
+for more options write "./configure --help"
+
+Recomended packages:
+zlib http://www.zlib.net/
