@@ -1363,7 +1363,7 @@ static int pdf_page_to_xobj(page_handle * pg_handle){
 
 	/*create new_page contents*/
 	contents=pdf_new_object();
-	asprintf(&str,"<</Length %lu\n>>\nstream\n%s\nendstream",strlen(stream_content),stream_content);
+	asprintf(&str,"<</Length %lu\n>>\nstream\n%s\nendstream",(long unsigned int)strlen(stream_content),stream_content);
 	free(stream_content);
 	assert(pdf_get_object_from_str(contents, str)==0);
 	free(str);
