@@ -11,6 +11,7 @@
 
 #define RELEASE 0
 #define PATCHLEVEL 2
+#define STD_IN_OUT 1
 
 struct conf {
 	int           infile;
@@ -34,9 +35,9 @@ char            pusage[][LLEN] = {
 };
 
 /* retezec obsahujici kratke volby */
-const char     *short_options = "qhf:v";
+static const char     *short_options = "qhf:v";
 /* Pole struktur s dlouhymi volbami */
-const struct option long_options[] = {
+static const struct option long_options[] = {
 	{"quiet", 0, NULL, 'q'},
 	{"verbose", 0, NULL, 'v'},
 	{"file", 0, NULL, 'f'},
@@ -119,10 +120,19 @@ parseargs(int argc, char *argv[], struct conf * conf)
 		}
 		else{
 			conf->commands = argv[optind];
+
+#ifdef STD_IN_OUT
+			conf->infile = -2;
+			conf->outfile = -2;
+#endif
 		}
 		break;
 	case 0:
 		if (conf->f_cmd != NULL){
+#ifdef STD_IN_OUT
+			conf->infile = -2;
+			conf->outfile = -2;
+#endif
 			break;
 		}
 	default:
@@ -161,7 +171,7 @@ int main(int argc, char *argv[]){
 	atexit(doc_free_format);
 	parseargs(argc, argv, &conf);
 	if (conf.infile != -1){
-		if ((strcmp(argv[conf.infile],"-")==0)){
+		if (conf.infile==-2 || (strcmp(argv[conf.infile],"-")==0)){
 			char BUFFER[1024];
 			FILE * f;
 			int fd;
@@ -184,7 +194,7 @@ int main(int argc, char *argv[]){
 	}
 
 	if (conf.infile!=-1){
-		p_doc=pages_list_open((argv[conf.infile][0]=='-')?filein:argv[conf.infile]);
+		p_doc=pages_list_open((conf.infile==-2 || (argv[conf.infile][0]=='-'))?filein:argv[conf.infile]);
 	}
 	else{
 		p_doc=pages_list_open(NULL);
@@ -230,12 +240,19 @@ int main(int argc, char *argv[]){
 		return -1;
 	}
 	if (conf.outfile != -1){
-		if (pages_list_save(p_doc,argv[conf.outfile])==-1){
+		char * _name;
+		if (conf.outfile==-2) {
+			_name = "-";
+		}
+		else {
+			_name = argv[conf.outfile];
+		}
+		if (pages_list_save(p_doc,_name)==-1){
 			printf("File wasn't saved ...\n");
 		}
 	}
 	pages_list_delete(p_doc);
-	if ((conf.infile!=-1) &&  strcmp(argv[conf.infile],"-")==0){
+	if ((conf.infile!=-1) && (conf.infile==-2 ||  strcmp(argv[conf.infile],"-")==0)){
 		remove(filein);
 	}
 	return 0;

@@ -10,18 +10,13 @@ all: pspdftool
 pspdftool: main.o  fileio.o cmdexec.o common.o vldoc.o vdocerror.o dummydoc.o vdocerror.o page_list.o ps_doc.o ps_lib.o pdf_doc.o pdf_lib.o vdoc.o pdf_parser.o pdf_filters.o
 	$(CC) ${LDFLAGS} -o $@ main.o  fileio.o cmdexec.o vldoc.o dummydoc.o vdocerror.o page_list.o common.o ps_doc.o ps_lib.o pdf_doc.o pdf_lib.o vdoc.o pdf_parser.o pdf_filters.o
 
-dep:clist
+dep:
 	gcc -MM *.c >  .depend || rm -f .depend
-
-clist:
-	if !  [ -f "clist" ]; then\
-       		ls -1 *.c *.h > clist ;\
-	fi
 
 doxy_doc: *.c *.h
 	doxygen doxygen.conf
 clean:
-	rm -f *.o .depend pspdftool pspdftool.1.gz clist
+	rm -f *.o .depend pspdftool pspdftool.1.gz
     
 install:all
 	[ -d "${DESTDIR}" ] || mkdir -p ${DESTDIR} > /dev/null
@@ -43,7 +38,3 @@ help:
 	@echo "clean    : Clean the dirs to be pristine in bondage"
 
 -include .depend
-#
-#ifeq (.depend, $(wildcard, .depend))
-#include .depend
-#endif
