@@ -60,7 +60,7 @@ print_help(FILE * stream, int exit_code)
 
 
 void sig_handler(int sig){
-         printf("Memory violation\n");
+         printf("Memory violation.\n");
          exit( -100);
 }
 			 

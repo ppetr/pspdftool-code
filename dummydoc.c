@@ -3,18 +3,18 @@
 #include "vdocerror.h"
 
 int dummy_doc_open(page_list_head * p_doc, const char * filename){
-	message(FATAL,"dummy_doc_open()",1);
+	message(FATAL,"dummy_doc_open().\n",1);
 	vdoc_errno=0;
 	return 0;
 }
-int dummy_doc_save(page_list_head * p_doc, const char * name,void * extra_args){ /*extra args, pro urcite formaty ...*/
-	message(FATAL,"dummy_doc_save()",1);
+int dummy_doc_save(page_list_head * p_doc, const char * name,void * extra_args){
+	message(FATAL,"dummy_doc_save().\n",1);
 	vdoc_errno=0;
 	return 0;
 }
 
 int dummy_doc_close(page_list_head * doc){
-	message(FATAL,"dummy_doc_close()",1);
+	message(FATAL,"dummy_doc_close().\n",1);
 	vdoc_errno=0;
 	return 0;
 }
@@ -22,8 +22,8 @@ int dummy_doc_close(page_list_head * doc){
 int dummy_doc_structure_merge(void * s1, void * s2){
 	return s1==s2;
 }
-void dummy_doc_page_delete(void *pg_handle){    /*smaze stranku*/
-	message(FATAL,"dummy_doc_delete_page()",1);
+void dummy_doc_page_delete(void *pg_handle){
+	message(FATAL,"dummy_doc_delete_page().\n",1);
 	vdoc_errno=0;
 }
 void * dummy_doc_structure_new(void * structure){
@@ -38,6 +38,7 @@ int dummy_doc_convert(page_list_head * p_doc, char * ext){
 
 #define OUT_MAX 256
 int dummy_doc_bbox_update(page_list_head * p_doc){
+#ifdef HAVE_GS
 	char filein[]=".tmp.XXXXXXXX";
 	char * cmd;
 	char in[OUT_MAX];
@@ -52,13 +53,13 @@ int dummy_doc_bbox_update(page_list_head * p_doc){
 	f=popen(cmd,"r");
 	free(cmd);
 	if (f==NULL){
-		message(FATAL,"popen() error\n");
+		message(FATAL,"bbox: popen() error.\n");
 	}
 	i=0;
 	while (fgets(in,OUT_MAX,f)){
 		if (starts(in,"%%BoundingBox:")){
 			if (sscanf(in + 14,"%d %d %d %d",&dim.left.x, &dim.left.y, &dim.right.x, &dim.right.y)!=4){
-				message(FATAL, "Wrong BBox format");
+				message(FATAL, "Wrong BBox format.\n");
 			}
 #if 0
 			printf ("%d %d %d %d\n",dim.left.x, dim.left.y, dim.right.x, dim.right.y);
@@ -77,7 +78,7 @@ int dummy_doc_bbox_update(page_list_head * p_doc){
 				}
 			}
 			else{
-				message(FATAL, "Wrong count of Pages");
+				message(FATAL, "bbox:Wrong pages count!.\n");
 			}
 			printf("[%d]",i+1);
 			fflush(stdout);
@@ -94,30 +95,33 @@ int dummy_doc_bbox_update(page_list_head * p_doc){
 	update_global_dimensions(p_doc);
 
 	return page==page_end(p_doc)?0:-1;
+#else
+	return -1;
+#endif
 }
 
 int dummy_2doc_pages_to_one(page_handle * p1, page_handle * p2){
-	message(FATAL,"dummy_doc_2pages_to_one()",1);
+	message(FATAL,"dummy_doc_2pages_to_one().\n",1);
 	vdoc_errno=0;
 	return 0;
 }
 int dummy_doc_draw_to_page_line(page_handle * handle, const coordinate * begin, const coordinate * end, int width){
-	message(FATAL,"dummy_doc_draw_to_page()",1);
+	message(FATAL,"dummy_doc_draw_to_page().\n",1);
 	vdoc_errno=0;
 	return 0;
 }
 int dummy_doc_draw_to_page_text(page_handle * pg_handle, const coordinate * where, const char * text,int size, const char * font){
-	message(FATAL,"dummy_doc_draw_to_page()",1);
+	message(FATAL,"dummy_doc_draw_to_page().\n",1);
 	vdoc_errno=0;
 	return 0;
 }
 int dummy_doc_page_transform(page_handle * pg_handle, transform_matrix * matrix){
-	message(FATAL,"dummy_doc_page_transform()",1);
+	message(FATAL,"dummy_doc_page_transform().\n",1);
 	vdoc_errno=0;
 	return 0;
 }
 int dummy_doc_page_crop(page_handle * pg_handle, dimensions * dimensions){
-	message(FATAL,"dummy_doc_set_crop_page()",1);
+	message(FATAL,"dummy_doc_set_crop_page().\n",1);
 	vdoc_errno=0;
 	return 0;
 }

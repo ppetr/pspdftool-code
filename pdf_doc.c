@@ -37,6 +37,7 @@ int pdf_doc_page_merge(page_handle * p1, page_handle * p2){
 	return pdf_page_merge(p1,p2);
 }
 int pdf_doc_convert(page_list_head * p_doc, char * ext){
+#ifdef HAVE_GS
 	char filein[]=".tmp.XXXXXXXX";
 	char fileout[]=".tmp.XXXXXXXX.pdf";
 	page_list_head * pom;
@@ -71,6 +72,7 @@ int pdf_doc_convert(page_list_head * p_doc, char * ext){
 		((pdf_doc_handle *)p_doc->doc->doc)->p_doc=p_doc;
 		return 0;
 	}
+#endif
 	return -1;
 
 }

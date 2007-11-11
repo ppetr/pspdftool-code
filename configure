@@ -68,6 +68,7 @@ else
 	echo "Disabled"
 fi
 
+echo '#define HAVE_CONIG 1' >> config.h
 echo '#endif' >> config.h
 
 echo "# 
