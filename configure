@@ -59,6 +59,23 @@ else
 	fi
 fi
 rm -f test test.c
+echo -n "Checking getopt_long..."
+
+echo '#include <stdio.h>
+#include <getopt.h>
+
+int main(void) {
+	printf("Hello World!");
+	return 0;
+}' > test.c
+if [ "${ZLIB}" ] && gcc -o test test.c -lz > /dev/null 2>&1; then
+	echo "Ok"
+	echo '#define HAVE_GETOPT_LONG 1' >> config.h
+else
+	echo "Failed"
+fi
+rm -f test test.c
+
 
 echo -n "Checking for asprintf..."
 echo '#include <stdio.h>
@@ -73,7 +90,7 @@ if [ "${ZLIB}" ] && gcc -o test test.c > /dev/null 2>&1; then
 	echo "Ok"
 	echo '#define HAVE_ASPRINTF 1' >> config.h
 else
-		echo "Disabled"
+		echo "Failed"
 fi
 rm -f test test.c
 

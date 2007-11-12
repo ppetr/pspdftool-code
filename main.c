@@ -1,5 +1,7 @@
 #include "common.h"
+#ifdef HAVE_GETOPT_LONG
 #include <getopt.h>
+#endif
 #include <unistd.h>
 #include <signal.h>
 #include "fileio.h"
@@ -33,6 +35,7 @@ char            pusage[][LLEN] = {
 
 /* retezec obsahujici kratke volby */
 static const char     *short_options = "qhf:v";
+#ifdef HAVE_GETOPT_LONG
 /* Pole struktur s dlouhymi volbami */
 static const struct option long_options[] = {
 	{"quiet", 0, NULL, 'q'},
@@ -41,6 +44,7 @@ static const struct option long_options[] = {
 	{"help", 0, NULL, 'h'},
 	{NULL, 0, NULL, 0}
 };
+#endif
 
 /* vypise parametry programu */
 static void 
@@ -75,7 +79,11 @@ parseargs(int argc, char *argv[], struct conf * conf)
 	conf->f_cmd=NULL;
 	conf->commands=NULL;
 	do {
+#ifdef HAVE_GETOPT_LONG
 		next_option = getopt_long(argc, argv, short_options, long_options, NULL);
+#else
+		next_option = getopt(argc,argv,short_options);
+#endif
 
 		switch (next_option) {
 		case 'u':
