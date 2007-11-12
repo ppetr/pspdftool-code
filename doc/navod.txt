@@ -1,0 +1,189 @@
+Pspdftool
+pdftool [<options>] -f<command_file>|<commands> <in_file_1> <in_file_2> ...<in_file_n>  <out_file>
+  -h --help	Display this help screen
+  -f --file    <command file>
+commands: <cmd_1> <cmd_2> ... <cmd_n>
+prikaz: jmeno(arg_1, ... arg_name=arg_value){page_begin..page_end commands ... -page_begin..page_end}
+
+
+Pri spusteni programu jsou nacteny vstupni soubory in_file_1 .. in_file_n a je z nich vytvoren seznam stranek.
+Vysledny seznam vypada nasledovne: in_file_1|in_file_2|..|in_file_n. Prvni stranka v dilcim souboru odpovida prvni strance v dilcim seznamu.
+Na tento seznam jsou postupne aplikovany prikazy, a to v poradi, v jakem jsou uvedeny, tj. nejprve cmd_1 pak cmd_2 az pro cmd_n.
+Jednotlive prikazy provadi upravy vstupniho seznamu a vysledkemi jejich aplikace je vystupni seznam (z pravidla pozmeneny vstupni).
+
+vstupni_seznam_stranek -> prikaz -> vystupni_seznam_stranek
+
+Prikaz cmd_1 je aplikovan na nove vytvoreny seznam stranek na jeho vystupni seznam je vstupnim seznamem pro cmd_2.
+Ostatni prikazy se aplikuji obdobne.
+Seznam, ktery vznikl provedenim posledniho prikazu, je ulozen do souboru outfile. Pokud je nazvem vstupniho souboru '-' bude program cist soubor ze 
+standardniho vstupu (funguje pro prvni soubor v seznamu). Obdobne pokud je nazev vystupniho soubor '-' bude vystup vypsan na standardni vstup.
+
+Soucasne podporovane formaty jsou PostScript a PDF.
+
+Anatomie prikazu
+prikaz se sklada ze tri casti:
+-nazvu
+-argumentu
+-selektoru stranek
+
+nazev je unikatni identifikator prikazu
+
+argumenty jsou uzavreny v kulatych zavorkach a mohou byt nasledujiciho typu:
+	-cidelny
+	-identifikator
+	-string (poslouponost znaku uzavrena do uvozovek)
+	-rozmer (cislo s jednotkou, jednotkou muze byt cm, mm, pt, in, absence jednotky odpovida jednotce in)
+Argumenty se mezi sebou oddeluji carkami.
+Kazdy argumenty prikazu je pojmenovany, je ho tedy mozno zapsat uzitim explicitniho nazvu (name=value)
+nebo uvedst pouze jeho hodnotu (pak zalezi na jeho pozici), pozicni argumenty musi byt uvedeny pred pojmenovanymi.
+Hodnoty argumentu mohou byt explicitne definovane (rozumne "defaluty"), a pak neni potreba je uvest.
+
+priklad:
+	foo        prikaz bez parametru
+	foo(a=1)   prikaz foo, kteremu je je nastaven parametr a na 1
+	foo(1)     prikaz foo, kteremu je prvni parametr nastaven na 1
+	foo(a=1,1) pojmenovany argument pred pozicnim, chybne
+
+selektor stranek zacina pravou a konci levou slozenou zavorkou
+	obsehuje mezerami oddelene vybery stranek
+	vyber stranek muze byt cislo, pripadne interval
+	pokud vyber obsehuje '-' jedna se o vyber z konce seznamu,
+	bezne se indexuje od zacatku
+	1         vyber stranky 1
+	1..2      vyber stranek 1 az 2 (vcetne 2)
+	-1	  vyber posledni stranky ze seznamu
+	-1..2     vyber stranek posledni a predposledni stranky  "od konce seznamu vyber prvni a druhou"
+	Za kazdym vyberem muze nasledovat seznam prikazu, ktere jsou aplikovay na vyber.
+
+priklady:
+	foo(a){1..2 foo1} prikaz foo s parametrem a a selektorem 1..2 na ktery se aplikuje prikaz foo1
+	foo{1..2 -1..2}   prikaz foo bez parametru a selektory 1..2 a -1..2
+
+Cely prikaz muze vypadat nasledovne:
+pspdftool "foo" in.pdf out.pdf  nacte soubor in.pdf aplikuje na seznam stranek prikaz foo a vysledek ulozi do douboru out.pdf
+                                (uvozovky kolem prikazu jsou kvuli shellu)
+
+Program pouziva kartezsky souradnicovy system s pocatkem v levem dolnimu rohu. Osa x je vodorovna orientovana smerem z leva do prava 
+a osa y ma orientaci svislou ze zdola na horu.
+
+Popis "uzitecnych prikazu"
+asi mezi nejcastejsi predtiskovou upravou dokumentu patri "transformace n stranek na jeden arch papiru".
+K tomu se hodi pouzije  prikaz nup.
+"nup(2)"                presklada dve stranky na jednu, pricemz otoci stranky o 90 stupnu
+"nup(4)"                presklada ctyri stranky na jednu bez rotace (prikaz nup je inteligentni :-))
+"nup(1,2,rotate=90)"    je ekvivalent prikazu nup(2), v x-ove ose 1 stranka (vodorovne) a v y-ove ose 2 stranky (svisle)
+"nup(2,2,paper=a4)"	je ekvivalentni prikazu nup(4) akorat vysledna stranka ma format a4
+			Dalsi uzitecne parametry prikazu nup  mohou byt: frame (oramovani), 
+			center (defalut 1 vysledek je centrovan, 0 nic se necentruje, 2 centruje se az vysledna stranka),
+			dx,dy (minimalni sirka mezi strankama),
+			orient (postup kladeni stranek na stranku, portrait z leva do prava, s hora dolu, landscape z prava do leva z hora dolu).
+
+Dalsi uzitacnou operaci nuze byt prerovnani stranek pro tisk knizecky.
+"book"			prerovna stranky pro tisk bookletu
+"book nup(2)"		prerovna stranky pro tisk bookletu a umisti dve stranky na jednu
+
+dale se mohou hodit nasledujici operace
+"scaleto(a4)"		zvetseni/zmenseni velikosti papiru na a4
+"scaleto2(1,2,3,4)"	zvetseni/zmenseni stranky na explicitne zadanou velikost (levy dolni, pravy horni roh).
+"paper(a4)"		nastaveni velikosti papiru a a4  (neprovadi se zvetseni, zmenseni stranky !!!)
+
+"crop(a4)"		oriznuti stranky na dany format
+"crop(1,2,3,4)"		oriznuti stranky na dany rozmer
+
+"merge"			slouci vsechny stranky v seznamu na jendu
+"cmarks"		prida orezove znacky na stranku, jsou umisteny podle bboxu
+
+Mezi zajimave prikazy patri modulo, select a apply.
+Nejprve popisme modulo, prvni parametr n udava pocet stranek ve skupinach, na ktere se rozdeli vstupni seznam. Pokud neni celkovy pocet stranek v seznamu
+nasobkem cisla n, prida se na konec seznamu prislusny pocet prazdnych stranek, aby seznam mel delku rovnu nasobku cisla n. Pokud je nastavem parametr round, tak n je rovno  max(n,round).
+Na kazdou skupinu je aplikovan vyber a provedou se prislusne prikazy. Pokud vyber stranky obsahuje symbol '-' vybiraji se stranky, ze skupiny,
+ktera je zrcadlove symetricka dle stredu seznamu. Vysledna skupina seznamu je spojena do vystupniho.
+Priklad:
+Necht mame seznam '1 2 3 4 5 ' aplikujme na nej modulo s n rovnym 3. Nejprve se seznam doplni na vhodnou delku '1 2 3 4 5 6 ', 
+a rozdeli se na prilsusne skupinky '1 2 3 | 4 5 6'. Vyberme {1 -1} '1 6| 4 3' a vysledek spojime '1 6 4 3'.
+Pokud parametr half je roven 1, zpracovava se pouze polovina skupinek, vysledek predchoziho prikladu je '1 6'.
+
+priklady:
+"modulo(2,half=1){-1 1 2 -2}"	odpovida operatoru book
+"modulo (1){-1}"		obrati seznam stranek
+"modulo(2){1 2 rotate(180)}"	odpovida prikazu duplex(1), tj. prvni stranka bez zmeny, druha se rotuje
+"modulo(16){1..16 book}"	vytvoreni signatury o 16-ti strankach pro vazani knizek
+
+apply provede na  vybranych strankach zvolene prikazy
+"apply{1 new }"			za prvni stranku prida prazdnou
+select vybere stranky ze seznamu a pripadne na ne aplikuje prikazy
+"select{1..10}"			vybere prvnich dest stranek z dokumentu
+
+Pokud potrebujeme docilit, aby vsechny stranky v dokumentu mely stejnou velikost, muzeme pouzit prikaz norm.
+"norm"				znormalizuje velikost stranek
+
+Nekdy maji stranky velke okraje. Pro tento pripad je mozne si nechat GhostScriptem prepocitat jejich okraje.
+Tato operace se provadi pomoci prikazu bbox. Rozmery vysledneho okraje je maximum z jednotlivych stranek.
+"bbox scaleto(a4)"	prepocitani okraju, zmenseni/zvetseni  stranek na papir a4.
+
+V jistych pripadech se muze hodit ocislovani stranek, k tomuto ukon je urcen prikaz number.
+"number"	ocisluje vsechny stranky, zacina se cislem 1 a je unisteno dole na stred stranky
+"number(10,10)" obdobne jako predchozi pripad, akorat je cislo umisteno na pozici 10, 10 od leveho dolniho rohu.
+"number(start=2)" bude se cislovat od 2
+"number(text=\"<<%d>>\")" cislovat se bude od 1, ale vystup bud vypadat nasledovne "<<cislo_stranky>>". ("%d" rika, kde bude cislo stranky)
+dalsi parametry: size (velikost pisma), font (nazev rezu pisma, font musi byt zahrnut v prislusnem formatu).
+
+Strucny seznam a popis vsech prikazu:
+
+apply{page_ranges}
+bbox			prepocita bbox kazde stranky za pomoci GS
+book			prerovna stranky do knizecky
+cmarks(by_bbox=1)	prida na stranky orezove znacky
+crop(paper=<id>)	orizne stranky na format papiru, neprovadi se zadne zmenseni/zvetseni
+crop2(lx=<mesure>,ly=<mesure>,hx=<mesure>,hy=<mesure>)
+del			smaze seznam stranek
+duplex(long-edge=1)	pootaci stranky v seznamu pro duplexni tisk
+flip(mode=<id>)		provede zrcadleni stranky dle zadane osy: horizontal|vertical
+line(lx=<mesure>,ly=<mesure>,hx=<mesure>,hy=<mesure>,width=2.00 pt)
+			nakresli caru na stranky
+merge			spoji stranky ze seznamu do jedne, stranky jsou umisteny pres sebe
+modulo(pages=<int>,half=-1,round=-1){page_ranges}
+move(x=<mesure>,y=<mesure>)
+			posune obsah stranek o zadane souradnice
+new{page_ranges}
+			vytvori prazdnou stranku a pripoji ji na konec seznamu
+norm(center=1,scale=1,l_bbox=1,g_bbox=1)
+			normovani velikosti stranek v seznamu
+number(x=<int>,y=<int>,start=1,text="default",font="default",size=10)
+			ocisluje stranky 
+nup(x=<int>,y=0,dx=0.00 pt,dy=0.00 pt,orient=unknown,rotate=0,by_bbox=0,paper=default,frame=0,center=1)
+orient(orient=<id>)	nastaveni orietnace textu na strankach landscape|portrait
+paper(paper=<id>)
+paper2(x=<mesure>,y=<mesure>)
+read(name=<str>)	pripoji na konec vstupniho seznamu stranky ze souboru name
+rotate(angle=<int>)	otoci stranky o zadany uhel
+scale(scale=<real>)	zmeni velikost stranek v zadannem meritku <1 zmenseni, >1 zvetseni
+scaleto(paper=<id>,top=36.00 pt,right=36.00 pt,bottom=36.00 pt,left=36.00 pt)
+scaleto2(x=<mesure>,y=<mesure>,top=36.00 pt,right=36.00 pt,bottom=36.00 pt,left=36.00 pt)
+select{page_ranges}
+text(x=<int>,y=<mesure>,text=<mesure>,font="default",size=10) vykresli text na stranky
+write(name=<str>)	ulozi vstupni seznam do souboru name a vystupni necha nezmeneny
+
+Omezeni:
+Soubory ve formatu PostScript nelze dohromady spojovat a jsou u nich vyzadovany DSC komentare.
+V pripade PDF formatu nelze pracovat s kryptovanymi PDF. Dale neumi program pracovat s PDF, ktera vyuzivaji rozsireni z verze 1.5 a novejsi.
+Mezi ne napriklad patri ObjectStreams a Cross-Reference Streams.
+
+Instalace:
+1. stahnout ze svn zdrojove kody
+"svn co https://pspdftool.svn.sourceforge.net/svnroot/pspdftool pspdftool"
+2. prepnout se do adresare se zdrojovymi kody
+"cd pdpdftool/trunk"
+3. konfigurace preklad instalace
+"./configure && make && make install"
+hotovo
+
+misto bodu 1. je mozne stahnout balicek se zdrojovymi kody, rozbalit je
+"tar xvzf pspdftool"
+prepnout se do aktualniho adresare
+"cd pspdftool/src/"
+a pokracovat bodem 3.
+
+Program funguje na linuxu a MacOS X. Mel by fungovat i na jinych rozumnych UNIXech.
+Je zavisly na zlibu a GhostScriptu.
+
