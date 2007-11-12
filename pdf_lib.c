@@ -1315,10 +1315,8 @@ static int pdf_page_to_xobj(page_handle * pg_handle){
 				major = stream_to_xobj(p_pdf,new_stream,pg,NULL);
 				major = pdf_compress_stream(p_pdf,major,p_pdf->table.table[major].minor, "FlateDecode");
 				assert(major!=-1);
-				/*
 				major = pdf_compress_stream(p_pdf,major,p_pdf->table.table[major].minor, "FlateDecode");
 				assert(major!=-1);
-				*/
 				asprintf(&xobjname,"xo%d",revision++);
 				xobj_val = pdf_add_dict_name_value(new_page_xobject,xobjname);
 

@@ -42,54 +42,28 @@ int strint(char * what,char * from[]){
 
 #ifndef HAVE_ASPRINTF
 #include <stdarg.h>
+int _asp_len;
 int asprintf(char **strp, const char *fmt, ...){
-/*TODO: implement it.*/
-	va_list params;
-	unsigned int length = 0;
-	va_start(params, fmt);
-	if (fmt == 0) return 0;
-	while (*fmt) {
-		if (*fmt == '%') {
-			++fmt;
-			switch(*fmt) {
-				/* Character */
-				case 'c':
-					length += putc((char) va_arg(params, int));
-					break;
-				/* String */
-				case 's':
-					length += puts(va_arg(params, const char*));
-					break;
-				/* Decimal */
-				case 'd':
-				case 'i':
-					length += putd(va_arg(params, const int));
-					break;
-				/* Unsigned decimal */
-				case 'u':
-					length += putu(va_arg(params, const unsigned int));
-					break;
-				/* Hexadecimal */
-				case 'x':
-					length += puth(va_arg(params, const unsigned int));
-					break;
-				/* Pointer */
-				case 'p':
-					length += putp(va_arg(params, const void *));
-					break;
-				/* The % character */
-				case '%':
-					length += putc('%');
-					break;
-			}
-			++fmt;
-		} else {
-			putc(*fmt++);
-			++length;
-		}
+	char * str = NULL;
+	size_t size = 0;
+	int ret_val;
+	va_list ap;
+
+	va_start(ap,fmt);
+	size = vsnprintf(str, 0, fmt, ap);
+	va_end(ap);
+	size +=1;
+	str = (char *) malloc(sizeof(char) * (size));
+	if (str == NULL){
+		va_end(ap);
+		return -1;
 	}
-	va_end(params);
-	return length;
+	va_start(ap,fmt);
+	ret_val = vsnprintf(str, size, fmt, ap);
+	va_end(ap);
+	*strp = str;
+	return ret_val;
+
 }
 #endif
 

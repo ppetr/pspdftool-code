@@ -4,6 +4,7 @@
 #define _GNU_SOURCE 
 /*#define _XOPEN_SOURCE*/
 
+#include "config.h"
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -15,8 +16,8 @@
 #include "pdf_lib.h"
 
 #ifndef HAVE_ASPRINTF
-int asprintf(char **strp, const char *fmt, ...);
-#endif
+	int asprintf(char **strp, const char *fmt, ...);
+ #endif
 
 /*format, ktery bude zvolen v pripade neplatne koncovky*/
 #define starts(s1,s2)	(strncmp(s1,s2,strlen(s2)) == 0)
