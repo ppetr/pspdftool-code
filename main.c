@@ -1,13 +1,10 @@
-#include <stdio.h>
-#include <string.h>
-#include <stdlib.h>
+#include "common.h"
 #include <getopt.h>
 #include <unistd.h>
-#include "common.h"
+#include <signal.h>
 #include "fileio.h"
 #include "vdoc.h"
 #include "cmdexec.h"
-#include <signal.h>
 
 #define RELEASE 0
 #define PATCHLEVEL 2

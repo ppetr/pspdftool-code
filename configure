@@ -77,11 +77,11 @@ echo "#
 # Datum:
 #
 
-CFLAGS = ${DEBUG} -c  -Wall -ansi -std=gnu99" > Makefile
+CFLAGS+=${DEBUG} -c  -Wall -ansi -std=gnu99" > Makefile
 if [ "${ZLIB}" ]; then
-	echo 'LDFLAGS = -lm -lz' >> Makefile
+	echo 'LDFLAGS+=-lm -lz' >> Makefile
 else
-	echo 'LDFLAGS = -lm' >> Makefile
+	echo 'LDFLAGS+=-lm' >> Makefile
 fi
 echo "prefix=${PREFIX}" >> Makefile
 cat ./Makefile.tail >> Makefile
