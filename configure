@@ -96,7 +96,7 @@ echo "#
 # Datum:
 #
 
-CFLAGS+=${DEBUG} -c  -Wall -ansi -std=gnu99" > Makefile
+CFLAGS+=${DEBUG} -c  -Wall -std=gnu99" > Makefile
 if [ "${ZLIB}" ]; then
 	echo 'LDFLAGS+=-lm -lz' >> Makefile
 else
