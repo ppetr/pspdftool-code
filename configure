@@ -60,6 +60,25 @@ else
 fi
 rm -f test test.c
 
+echo -n "Checking for asprintf..."
+echo '#include <stdio.h>
+#include <stdlib.h>
+
+int main(void) {
+	char * s;
+	asprintf(&s,"Hello World!");
+	return 0;
+}' > test.c
+if [ "${ZLIB}" ] && gcc -o test test.c > /dev/null 2>&1; then
+	echo "Ok"
+	echo '#define HAVE_ASPRINTF 1' >> config.h
+else
+		echo "Disabled"
+fi
+rm -f test test.c
+
+
+
 echo -n "Checking for lzw..."
 if [ "${LZW}" ]; then
 	echo "Ok"

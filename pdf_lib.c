@@ -780,7 +780,7 @@ static int _getPdfPages(page_list_head * p_doc,MYFILE *f, int major, int minor){
 						copy_dimensions(&new_page->page->bbox,&new_page->page->paper);
 					}
 					else{
-						copy_dimensions(&new_page->page->bbox,&new_page->page->bbox);
+						copy_dimensions(&new_page->page->bbox,&p_doc->doc->bbox);
 					}
 				}
 			}

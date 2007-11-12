@@ -1,9 +1,9 @@
 #ifndef _COMMON_H_
 #define _COMMON_H_
 
-#define _GNU_SOURCE
+#define _GNU_SOURCE 
+/*#define _XOPEN_SOURCE*/
 
-#include <features.h>
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -13,6 +13,10 @@
 #include <unistd.h>
 #include "ps_lib.h"
 #include "pdf_lib.h"
+
+#ifndef HAVE_ASPRINTF
+int asprintf(char **strp, const char *fmt, ...);
+#endif
 
 /*format, ktery bude zvolen v pripade neplatne koncovky*/
 #define starts(s1,s2)	(strncmp(s1,s2,strlen(s2)) == 0)
