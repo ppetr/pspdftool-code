@@ -371,11 +371,12 @@ int pages_nup(page_list_head * p_doc,int x,int y, dimensions * bbox,
 			for (i=0;i<x;++i){
 				for (j=1;j<=y;++j){
 					transform_matrix  translate_matrix = {{1,0,0},{0,1,0},{0,0,1}};
+					page_list * page;
 					if (pages_count==0){
 						goto out;
 					}
 					pages_count--;
-					page_list * page = page_next(page_begin(p_doc));
+					page = page_next(page_begin(p_doc));
 					pages_list_add_page(selected_pages,page,pg_add_end);
 					transform_matrix_move_xy(&translate_matrix,
 									start_x - off_x*i, 
@@ -391,11 +392,12 @@ int pages_nup(page_list_head * p_doc,int x,int y, dimensions * bbox,
 			for (j=1;j<=y;++j){
 				for (i=0;i<x;++i){
 					transform_matrix  translate_matrix = {{1,0,0},{0,1,0},{0,0,1}};
+					page_list * page;
 					if (pages_count==0){
 						goto out;
 					}
 					pages_count--;
-					page_list * page = page_next(page_begin(p_doc));
+					page = page_next(page_begin(p_doc));
 					pages_list_add_page(selected_pages,page,pg_add_end);
 					transform_matrix_move_xy(&translate_matrix,
 									start_x + off_x*i,
@@ -547,6 +549,7 @@ int pages_norm(page_list_head * p_doc, int center, int scale, int l_bbox, int g_
 	for (page=page_next(page_begin(p_doc));page!=page_end(p_doc);page=page_next(page)){
 		{
 			double move_x, move_y;
+			transform_matrix  matrix = {{1,0,0},{0,1,0},{0,0,1}};
 			if (g_bbox){
 				move_x = p_doc->doc->bbox.left.x;
 				move_y = p_doc->doc->bbox.left.y;
@@ -563,7 +566,6 @@ int pages_norm(page_list_head * p_doc, int center, int scale, int l_bbox, int g_
 				move_x -= page->page->paper.left.x;
 			       	move_y -= page->page->paper.left.y;
 			}
-			transform_matrix  matrix = {{1,0,0},{0,1,0},{0,0,1}};
 			transform_matrix_move_xy(&matrix,move_x,move_y);
 			doc_page_transform(page,&matrix);
 

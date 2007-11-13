@@ -781,8 +781,8 @@ int pdf_count_size_object (pdf_object * p_obj){
 			return sizeof(pdf_object) + strlen(p_obj->val.name) + 1; 
 		 case PDF_OBJ_ARRAY:
 			{
-				count = sizeof(pdf_object);
 				pdf_array *  p_array=p_obj->val.array.next;
+				count = sizeof(pdf_object);
 				while (p_array!=(pdf_array *)&(p_obj->val.array)){
 					p_array=p_array->next;
 					count=pdf_count_size_object(p_array->prev->obj);
@@ -793,8 +793,8 @@ int pdf_count_size_object (pdf_object * p_obj){
 			 return count;
 		 case PDF_OBJ_DICT:
 			{
-				count = sizeof(pdf_object);
 				pdf_dict * dict=p_obj->val.dict.next;
+				count = sizeof(pdf_object);
 				while(dict!=(pdf_dict *) &(p_obj->val.dict)){
 					dict=dict->next;
 					count += pdf_count_size_object(dict->prev->obj);
