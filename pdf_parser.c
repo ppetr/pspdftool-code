@@ -247,12 +247,20 @@ int pdf_get_object(MYFILE * f, pdf_object * p_obj, pdf_object_table * xref, pdf_
 				}	
 				p_obj->val.stream.begin=myftell(f);
 				p_obj->val.stream.len=stream_len;
-				p_obj->val.stream.stream=(char *)malloc(sizeof(char) * stream_len);
-				if (p_obj->val.stream.stream==NULL){
-					message(FATAL,"maloc() error\n");
+				if (stream_len){
+					p_obj->val.stream.stream=(char *)malloc(sizeof(char) * stream_len);
+					if (p_obj->val.stream.stream==NULL){
+						message(FATAL,"maloc() error\n");
+					}
+					if (myfread(p_obj->val.stream.stream,sizeof(char),stream_len,f)!=stream_len){
+						message(FATAL,"fread() error\n");
+					}
 				}
-				if (myfread(p_obj->val.stream.stream,sizeof(char),stream_len,f)!=stream_len){
-					message(FATAL,"fread() error\n");
+				else {
+					p_obj->val.stream.stream=(char *)malloc(sizeof(char) * 1);
+					if (p_obj->val.stream.stream==NULL){
+						message(FATAL,"maloc() error\n");
+					}
 				}
 				if (pdf_get_tok(f,last_tok)!=0
 					|| last_tok->type!=PDF_T_ID
@@ -729,10 +737,11 @@ int pdf_write_object (pdf_object * p_obj, FILE * f){
 			fprintf(f,"\nstream\n");
 
 			assert (p_obj->val.stream.stream!=NULL);
-			if (fwrite(p_obj->val.stream.stream,sizeof(char),p_obj->val.stream.len,f)!=p_obj->val.stream.len){
-				message(FATAL,"fwrite() error\n");
+			if (p_obj->val.stream.len){
+				if (fwrite(p_obj->val.stream.stream,sizeof(char),p_obj->val.stream.len,f)!=p_obj->val.stream.len){
+					message(FATAL,"fwrite() error\n");
+				}
 			}
-
 			fprintf(f,"\nendstream");
 			}
 			 return 0;
@@ -953,11 +962,19 @@ int pdf_copy_object (pdf_object * new_obj, pdf_object * old_obj){
 			new_obj->val.stream.dict=pdf_new_object();
 			pdf_copy_object(new_obj->val.stream.dict,old_obj->val.stream.dict);
 			assert (old_obj->val.stream.stream!=NULL);
-			new_obj->val.stream.stream=(char *) malloc(sizeof(char) * (old_obj->val.stream.len));
-			if (new_obj->val.stream.stream==NULL){
-				return -1;
+			if (old_obj->val.stream.len){
+				new_obj->val.stream.stream=(char *) malloc(sizeof(char) * (old_obj->val.stream.len));
+				if (new_obj->val.stream.stream==NULL){
+					return -1;
+				}
+				memcpy(new_obj->val.stream.stream,old_obj->val.stream.stream,old_obj->val.stream.len);
+				}
+			else {
+				new_obj->val.stream.stream=(char *) malloc(sizeof(char) * 1);
+				if (new_obj->val.stream.stream==NULL){
+					return -1;
+				}
 			}
-			memcpy(new_obj->val.stream.stream,old_obj->val.stream.stream,old_obj->val.stream.len);
 			return 0;
 		 case PDF_OBJ_NULL:
 			 return 0;
