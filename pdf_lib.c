@@ -327,7 +327,7 @@ int pdf_xreftable_get(MYFILE * f,pdf_object_table * table,long xref_poz, char * 
 	while (myfgets(line,LLEN,f,NULL)!=EOF && len>=0){
 		len=strlen(line);
 		--len; 
-		while (isspace(line[len])){
+		while (isspace((int)(line[len]))){
 			line[len]=0;
 			--len;
 		}
@@ -1313,10 +1313,10 @@ static int pdf_page_to_xobj(page_handle * pg_handle){
 
 				}
 				major = stream_to_xobj(p_pdf,new_stream,pg,NULL);
+#ifdef HAVE_ZLIB
 				major = pdf_compress_stream(p_pdf,major,p_pdf->table.table[major].minor, "FlateDecode");
 				assert(major!=-1);
-				major = pdf_compress_stream(p_pdf,major,p_pdf->table.table[major].minor, "FlateDecode");
-				assert(major!=-1);
+#endif
 				asprintf(&xobjname,"xo%d",revision++);
 				xobj_val = pdf_add_dict_name_value(new_page_xobject,xobjname);
 

@@ -15,6 +15,11 @@
 #include "ps_lib.h"
 #include "pdf_lib.h"
 
+#ifdef MALOC_CHECK
+extern size_t __count;
+#define malloc(a) (__count+=(a),printf("%s:%d:%lu\n",__FILE__,__LINE__,(__count)),malloc(a))
+#endif
+
 #ifndef HAVE_ASPRINTF
 	int asprintf(char **strp, const char *fmt, ...);
  #endif

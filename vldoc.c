@@ -617,7 +617,7 @@ void doc_get_pformat_name_to_dimensions(char * name, dimensions *dim){
 	name=skipwhspaces(name);
 	{/*pouze jedno slovo*/
 		char * pom = name;
-		while (*pom && !isspace(*pom)){
+		while (*pom && !isspace((int)(*pom))){
 			++pom;
 		}
 		*pom=0;

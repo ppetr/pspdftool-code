@@ -708,7 +708,7 @@ static void getPname(char * kam, const char * odkud){
 	while (odkud[i] && odkud[i]!=':')
 		++i;
 	++i;
-	while (odkud[i] && isspace(odkud[i]))
+	while (odkud[i] && isspace((int)(odkud[i])))
 		++i;
 
 	if (odkud[i]=='('){
@@ -720,7 +720,7 @@ static void getPname(char * kam, const char * odkud){
 		kam[j]=0;
 	}
 	else {
-		while (odkud[i] && !isspace(odkud[i])){
+		while (odkud[i] && !isspace((int)(odkud[i]))){
 			kam[j]=odkud[i];
 			++i;++j;
 		}
