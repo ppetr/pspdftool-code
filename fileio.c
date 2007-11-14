@@ -49,7 +49,7 @@ MYFILE * stropen(const char * str){
 		vdoc_errno=VDOC_ERR_LIBC;
 		return NULL;	
 	}
-	strcpy((char *)f->buf,str);
+	strncpy((char *)f->buf,str,len+1);
 	f->pos=len;
 	f->f=NULL;
 	f->ptr=f->buf;

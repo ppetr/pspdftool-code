@@ -76,6 +76,13 @@ else
 fi
 rm -f test test.c
 
+echo -n "Checking for GhostScript..."
+if gs --version > /dev/null ; then
+	echo "OK"
+	echo '#define HAVE_GS 1' >> config.h
+else
+	echo "Fail"
+fi
 
 echo -n "Checking for asprintf..."
 echo '#include <stdio.h>
@@ -121,6 +128,14 @@ else
 fi
 echo "prefix=${PREFIX}" >> Makefile
 cat ./Makefile.tail >> Makefile
+
+if gmake --version > /dev/null; then
+	echo "" >> Makefile
+	echo "dep:" >> Makefile
+	echo "		gcc -MM *.c >  .depend || rm -f .depend" >> Makefile
+	echo "" >> Makefile
+	echo "-include .depend" >> Makefile
+fi
 
 echo
 echo "Configuration complete, use make to compile it ;-)"

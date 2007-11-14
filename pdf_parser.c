@@ -669,7 +669,7 @@ pdf_object * pdf_get_dict_name_value(pdf_object * p_obj, char *  name){
 }
 
 int pdf_write_object (pdf_object * p_obj, FILE * f){
-	int ret_val;
+	int ret_val = -1;
 	switch(p_obj->type){
 		 case PDF_OBJ_BOOL:
 			 if (p_obj->val.boolean){

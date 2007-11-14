@@ -201,9 +201,9 @@ static void lzw_put_prefix(int word, struct lzw_dict dict[DICT_LEN], char ** out
 
 int lzw_decompress_filter(char ** stream, long  * len, pdf_object * dict){
 	struct lzw_dict lzw_dict[DICT_LEN +1];
-	size_t index, offset, w_size, d_index;
+	size_t index, offset, w_size, d_index = LZW_END_STREAM + 1;
 	int word;
-	int prev_word;
+	int prev_word = LZW_CL_DICT;
 	char * out_buf;
 	int out_len = 3 * (*len);
 	int out_index = 0;

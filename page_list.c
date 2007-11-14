@@ -194,7 +194,7 @@ int pages_list_cat(page_list_head * l1, page_list_head * l2){
 	assert(is_page_list_head(l1) && is_page_list_head(l2));
 
 	if (doc_handle_convert_format(l1,l2)==-1){
-		assert(0);
+		/*assert(0);*/
 		return -1;
 	}
 

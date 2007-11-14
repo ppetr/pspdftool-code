@@ -527,7 +527,7 @@ static int cmd_get_args(MYFILE * f, cmd_ent_struct * cmd, cmd_tok_struct * p_tok
 							return -1;
 						}
 						eq=1;
-						strcpy(param->name,p_tok->str);
+						strncpy(param->name,p_tok->str,STR_MAX);
 						break;
 					case CMD_TOK_COMMA:
 						/*???*/

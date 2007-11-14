@@ -1026,7 +1026,7 @@ int pdf_save(page_list_head * p_doc, const char * filename){
 	long table_poz;
 	pdf_object * pobj;
 	pdf_doc_handle * p_pdf = NULL;
-	int  * pages;
+	int  * pages = NULL;
 	char binary[] = {(char)0xDE,(char)0xAD,' ',(char)0xBE,(char)0xEF,'\n',0};
 	if (strcmp(filename,"-")){
 		f = fopen(filename,"wb");

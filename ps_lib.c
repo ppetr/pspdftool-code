@@ -1126,7 +1126,7 @@ PAGE * ps_dsc_page_new(const PAGE * what){
 					free(pom);
 					return NULL;
 				}
-				strcpy(retezec,blok->data);
+				strncpy(retezec,blok->data,strlen(blok->data) + 1);
 			}
 			else{
 				
