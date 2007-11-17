@@ -129,7 +129,7 @@ fi
 echo "prefix=${PREFIX}" >> Makefile
 cat ./Makefile.tail >> Makefile
 
-if gmake --version > /dev/null; then
+if gmake --version > /dev/null 2>&1; then
 	echo "" >> Makefile
 	echo "dep:" >> Makefile
 	echo "		gcc -MM *.c >  .depend || rm -f .depend" >> Makefile
