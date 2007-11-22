@@ -604,7 +604,17 @@ int pages_norm(page_list_head * p_doc, int center, int scale, int l_bbox, int g_
 				size_y = page->page->paper.right.y-page->page->paper.left.y;
 
 			}
-			transform_matrix_move_xy(&matrix,(gsize_x-size_x)/2,(gsize_y-size_y)/2);
+			switch (center){
+			case 1:
+				transform_matrix_move_xy(&matrix,(gsize_x-size_x)/2,(gsize_y-size_y)/2);
+				break;
+			case 2:
+				transform_matrix_move_xy(&matrix,0,(gsize_y-size_y)/2);
+				break;
+			case 3:
+				transform_matrix_move_xy(&matrix,(gsize_x-size_x)/2,gsize_y - size_y);
+				break;
+			}
 			doc_page_transform(page,&matrix);
 		}
 		copy_dimensions(&(page->page->bbox),&(bbox));
