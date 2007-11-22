@@ -17,6 +17,7 @@ Prikaz cmd_1 je aplikovan na nove vytvoreny seznam stranek na jeho vystupni sezn
 Ostatni prikazy se aplikuji obdobne.
 Seznam, ktery vznikl provedenim posledniho prikazu, je ulozen do souboru outfile. Pokud je nazvem vstupniho souboru '-' bude program cist soubor ze 
 standardniho vstupu (funguje pro prvni soubor v seznamu). Obdobne pokud je nazev vystupniho soubor '-' bude vystup vypsan na standardni vstup.
+Neni-li programu nazev vstupniho a vystupniho souboru, je vstup nacten ze standardniho vstupu a vystup je vypsan na standardni vystup.
 
 Soucasne podporovane formaty jsou PostScript a PDF.
 
@@ -116,6 +117,8 @@ select vybere stranky ze seznamu a pripadne na ne aplikuje prikazy
 
 Pokud potrebujeme docilit, aby vsechny stranky v dokumentu mely stejnou velikost, muzeme pouzit prikaz norm.
 "norm"				znormalizuje velikost stranek
+mezi zajimave parametry norm patri center, vychozi hodnota je centrovani podle osy x, none vypne centrovani, x centrovani podle osy x, y centrovani podle osy y a 
+xy centrovani podle obou os.
 
 Nekdy maji stranky velke okraje. Pro tento pripad je mozne si nechat GhostScriptem prepocitat jejich okraje.
 Tato operace se provadi pomoci prikazu bbox. Rozmery vysledneho okraje je maximum z jednotlivych stranek.

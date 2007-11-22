@@ -39,20 +39,27 @@ struct id_str{
     int id;
 };
 
-struct id_str ids[]={
+struct id_str ids_orient[]={
 	{"vertical",DOC_O_LANDSCAPE},
 	{"v",DOC_O_LANDSCAPE},
+	{"landscape",DOC_O_LANDSCAPE},
 	{"horizontal",DOC_O_PORTRAIT},
 	{"h",DOC_O_PORTRAIT},
-	{"landscape",DOC_O_LANDSCAPE},
-	{"portrait",DOC_O_LANDSCAPE}
+	{"portrait",DOC_O_PORTRAIT}
 };
 
+struct id_str ids_center[]={
+	{"none",0},
+	{"xy",1},
+	{"x",3},
+	{"y",2},
+};
+#define get_ids_len(a) (sizeof((a))/sizeof(struct id_str))
 
-static int str_to_id(char * str){
+static int str_to_id(char * str, struct id_str ids[],size_t len){
 	int i;
-	for(i=0;i<sizeof(ids)/sizeof(struct id_str) &&strcmp(str,ids[i].str);++i);
-	if (i==sizeof(ids)/sizeof(struct id_str)){
+	for(i=0;i<len &&strcmp(str,ids[i].str);++i);
+	if (i==len){
 		return -1;
 	}
 	else{
@@ -237,7 +244,7 @@ static param cmd_move_params[]   = {{"x",CMD_TOK_MESURE,CMD_TOK_UNKNOWN,0,0,NULL
 
 static param cmd_cmarks_params[]   = {{"by_bbox",CMD_TOK_INT,CMD_TOK_INT,1,0,NULL}};
 
-static param cmd_norm_params[]   = {{"center",CMD_TOK_INT,CMD_TOK_INT,1,0,NULL},
+static param cmd_norm_params[]   = {{"center",CMD_TOK_ID,CMD_TOK_ID,0,0,NULL},
 				    {"scale",CMD_TOK_INT,CMD_TOK_INT,1,0,NULL},
 				    {"l_bbox",CMD_TOK_INT,CMD_TOK_INT,1,0,NULL},
 				    {"g_bbox",CMD_TOK_INT,CMD_TOK_INT,1,0,NULL}};
@@ -1309,7 +1316,7 @@ static int cmd_scaleto2(page_list_head * p_doc, param params[], cmd_page_list_he
 }
 static int cmd_flip(page_list_head * p_doc, param params[], cmd_page_list_head * pages){
 	int mode1, mode2;
-	mode1=str_to_id(params[0].str);
+	mode1=str_to_id(params[0].str,ids_orient,get_ids_len(ids_orient));
 	mode2=DOC_O_UNKNOWN;
 
 	if (mode1==-1){
@@ -1399,7 +1406,10 @@ static int cmd_nup(page_list_head * p_doc, param params[], cmd_page_list_head * 
 		orient=(orient==DOC_O_UNKNOWN)?DOC_O_PORTRAIT:DOC_O_LANDSCAPE;
 	}
 	else{
-		orient=str_to_id(params[4].str);
+		orient=str_to_id(params[4].str,ids_orient,get_ids_len(ids_orient));
+		if (orient == -1){
+			return -1;
+		}
 	}
 	
 	rotate=params[5].int_number;
@@ -1424,7 +1434,15 @@ static int cmd_cmarks(page_list_head * p_doc, param params[], cmd_page_list_head
 	return pages_cmarks(p_doc, params[0].int_number);
 }
 static int cmd_norm(page_list_head * p_doc, param params[], cmd_page_list_head * pages){
-	return pages_norm(p_doc, params[0].int_number, params[1].int_number, params[2].int_number, params[3].int_number);
+	int center;
+	center=1;
+	if (params[0].str){
+		center = str_to_id(params[0].str,ids_center,get_ids_len(ids_center));
+		if (center == -1){
+			return -1;
+		}
+	}
+	return pages_norm(p_doc, center, params[1].int_number, params[2].int_number, params[3].int_number);
 }
 static int cmd_bbox(page_list_head * p_doc, param params[], cmd_page_list_head * pages){
 	return doc_update_bbox(p_doc);
