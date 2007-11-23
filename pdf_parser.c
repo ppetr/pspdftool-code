@@ -620,9 +620,8 @@ pdf_object * pdf_add_dict_name_value(pdf_object * p_obj, char *  name){
 	if (pom_dict==NULL){
 		return NULL;
 	}
-	pom_dict->name=(char *)malloc(sizeof(char) * strlen(name) + 1);
+	pom_dict->name = strdup(name);
 	assert(pom_dict->name!=NULL);
-	strcpy(pom_dict->name, name);
 	pom_dict->obj=pdf_new_object();
 	if (pom_dict->obj==NULL){
 		return NULL;
@@ -908,16 +907,14 @@ int pdf_copy_object (pdf_object * new_obj, pdf_object * old_obj){
 			 return 0;
 		 case PDF_OBJ_STR:
 			 new_obj->val.str.type=old_obj->val.str.type;
-			 new_obj->val.str.str=(char *) malloc (sizeof(char) * (strlen(old_obj->val.str.str)+1));
+			 new_obj->val.str.str=strdup(old_obj->val.str.str);
 			 if (new_obj->val.str.str==NULL){
 				 return -1;
 			 }
-			 strcpy(new_obj->val.str.str, old_obj->val.str.str);
 			return 0;	 
 		 case PDF_OBJ_NAME:
-			new_obj->val.name = (char *) malloc(sizeof(char)*(strlen(old_obj->val.name)+1));
+		 	new_obj->val.name = strdup(old_obj->val.name);
 			assert(new_obj->val.name!=NULL);
-			strcpy(new_obj->val.name, old_obj->val.name);
 			return 0;
 		 case PDF_OBJ_ARRAY:
 			{
@@ -946,11 +943,10 @@ int pdf_copy_object (pdf_object * new_obj, pdf_object * old_obj){
 						return -1;
 					}
 
-					new_dict->name=(char *)malloc(sizeof(char) * strlen(old_dict->name) + 1);
+					new_dict->name=strdup(old_dict->name);
 					assert(new_dict->name!=NULL);
 					new_dict->obj=pdf_new_object();
 
-					strcpy(new_dict->name,old_dict->name);
 					pdf_copy_object(new_dict->obj,old_dict->obj);
 					__list_add((pdf_dict*)&(new_obj->val.dict),new_dict);
 					old_dict=old_dict->next;

@@ -94,8 +94,13 @@ int dummy_doc_bbox_update(page_list_head * p_doc){
 	remove(filein);
 	update_global_dimensions(p_doc);
 
+	if (page!=page_end(p_doc)){
+		message(FATAL,"There were some errors during recalculating bbox.\n");
+	}
+
 	return page==page_end(p_doc)?0:-1;
 #else
+	message(FATAL,"Program was compiled without ghostscript support.\n");
 	return -1;
 #endif
 }
