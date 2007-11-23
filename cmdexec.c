@@ -10,9 +10,9 @@
 #include "fileio.h"
 #include "magic.h"
 
-/**preskoci prazdne znaky v retezci*/
 #define skip_wh_spaces(_where_){while (*(_where_) && isspace(*(_where_)))\
 		++_where_;}
+#define get_ids_len(a) (sizeof((a))/sizeof(struct id_str))
 #define STR_MAX 255
 #define PARAM_MAX 10
 /*definice typu*/
@@ -49,12 +49,16 @@ struct id_str ids_orient[]={
 };
 
 struct id_str ids_center[]={
-	{"none",0},
+	{"off",0},
 	{"xy",1},
 	{"x",3},
-	{"y",2},
+	{"y",2}
 };
-#define get_ids_len(a) (sizeof((a))/sizeof(struct id_str))
+struct id_str ids_center_nup[]={
+	{"off",0},
+	{"on",1},
+	{"final",2}
+};
 
 static int str_to_id(char * str, struct id_str ids[],size_t len){
 	int i;
@@ -226,7 +230,7 @@ static param cmd_nup_params[] = {{"x",CMD_TOK_INT,CMD_TOK_UNKNOWN,0,0,NULL},
 				 {"by_bbox",CMD_TOK_INT,CMD_TOK_INT,0,0,NULL},
 				 {"paper",CMD_TOK_ID,CMD_TOK_ID,0,0,NULL},
 				 {"frame",CMD_TOK_INT,CMD_TOK_INT,0,0,NULL},
-				 {"center",CMD_TOK_INT,CMD_TOK_INT,1,0,NULL}};
+				 {"center",CMD_TOK_ID,CMD_TOK_ID,0,0,NULL}};
 static param cmd_text_params[] = {{"x",CMD_TOK_MESURE,CMD_TOK_UNKNOWN,0,0,NULL},
 				 {"y",CMD_TOK_MESURE,CMD_TOK_UNKNOWN,0,0,NULL},
 				 {"text",CMD_TOK_STR,CMD_TOK_UNKNOWN,0,0,NULL},
@@ -1391,7 +1395,7 @@ static int cmd_orient(page_list_head * p_doc, param params[], cmd_page_list_head
 	return 0;
 }
 static int cmd_nup(page_list_head * p_doc, param params[], cmd_page_list_head * pages){
-	int x,y, orient,rotate,order_bbox,frame;
+	int x,y, orient,rotate,order_bbox,frame, center=1;
 	double dx,dy;
 	dimensions bbox;
 
@@ -1425,8 +1429,14 @@ static int cmd_nup(page_list_head * p_doc, param params[], cmd_page_list_head * 
 	}
 	frame=params[8].int_number;
 	/*TODO: doresit rozmery!!!*/
+	if (params[9].str!=NULL){
+		center=str_to_id(params[9].str,ids_center_nup,get_ids_len(ids_center_nup));
+		if (center==-1){
+			return -1;
+		}
+	}
 	
-	return pages_nup(p_doc,x,y,&bbox,dx,dy,orient,rotate,order_bbox,frame, params[9].int_number);
+	return pages_nup(p_doc,x,y,&bbox,dx,dy,orient,rotate,order_bbox,frame, center);
 }
 
 

@@ -75,7 +75,7 @@ K tomu se hodi pouzije  prikaz nup.
 "nup(1,2,rotate=90)"    je ekvivalent prikazu nup(2), v x-ove ose 1 stranka (vodorovne) a v y-ove ose 2 stranky (svisle)
 "nup(2,2,paper=a4)"	je ekvivalentni prikazu nup(4) akorat vysledna stranka ma format a4
 			Dalsi uzitecne parametry prikazu nup  mohou byt: frame (oramovani), 
-			center (defalut 1 vysledek je centrovan, 0 nic se necentruje, 2 centruje se az vysledna stranka),
+			center (defalut on vysledek je centrovan, off nic se necentruje, final centruje se az vysledna stranka),
 			dx,dy (minimalni sirka mezi strankama),
 			orient (postup kladeni stranek na stranku, portrait z leva do prava, s hora dolu, landscape z prava do leva z hora dolu).
 
