@@ -68,7 +68,7 @@ void message(int flags, char *format, ...)
 	  case 's':
 	    {
 	      char *s = va_arg(args, char *) ;
-	      sprintf(bufptr, fmtbuf, s) ;
+	      snprintf(bufptr,MAX_MESSAGE - 1 - strlen(msgbuf), fmtbuf, s) ;
 	      bufptr += strlen(bufptr) ;
 	    }
 	    break ;
