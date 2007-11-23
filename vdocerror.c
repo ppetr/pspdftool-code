@@ -15,6 +15,7 @@ void message(int flags, char *format, ...)
   static int column = 0 ;	/* current screen column for message wrap */
   char msgbuf[MAX_MESSAGE] ;	/* buffer in which to put the message */
   char *bufptr = msgbuf ;	/* message buffer pointer */
+  msgbuf[0]=0;
 
   if ( (flags & MESSAGE_NL) && column != 0 ) {	/* new line if not already */
     putc('\n', stderr) ;
@@ -49,7 +50,7 @@ void message(int flags, char *format, ...)
 	  case 'e': case 'E': case 'f': case 'g': case 'G':
 	    {
 	      double d = va_arg(args, double) ;
-	      sprintf(bufptr, fmtbuf, d) ;
+	      snprintf(bufptr,MAX_MESSAGE - 1 - strlen(msgbuf), fmtbuf, d) ;
 	      bufptr += strlen(bufptr) ;
 	    }
 	    break ;
@@ -57,10 +58,10 @@ void message(int flags, char *format, ...)
 	  case 'p': case 'u': case 'x': case 'X':
 	    if ( longform ) {
 	      long l = va_arg(args, long) ;
-	      sprintf(bufptr, fmtbuf, l) ;
+	      snprintf(bufptr,MAX_MESSAGE - 1 - strlen(msgbuf), fmtbuf, l) ;
 	    } else {
 	      int i = va_arg(args, int) ;
-	      sprintf(bufptr, fmtbuf, i) ;
+	      snprintf(bufptr,MAX_MESSAGE - 1 - strlen(msgbuf), fmtbuf, i) ;
 	    }
 	    bufptr += strlen(bufptr) ;
 	    break ;
