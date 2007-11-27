@@ -115,6 +115,9 @@ parseargs(int argc, char *argv[], struct conf * conf)
 			conf->outfile = optind + 1;
 		}
 		else{
+#ifdef STD_IN_OUT
+			conf->infile = -2;
+#endif
 			conf->commands = argv[optind];
 			conf->outfile = optind + 1;
 		}
@@ -205,12 +208,12 @@ int main(int argc, char *argv[]){
 		p_doc=pages_list_open(NULL);
 	}
 	if (p_doc==NULL){
-		message(FATAL,"File \"%s\" is not PS PDF format.\n",argv[conf.infile]);
+		message(FATAL,"File \"%s\" is not PS, PDF format.\n",(conf.infile>0)?argv[conf.infile]:"stdin");
 		/*soubor se nepodarilo nacist*/
 		return 1;
 	}
 
-	for(i=conf.infile + 1;i<conf.outfile;++i){
+	for(i=conf.infile + 1;conf.infile>0 && i<conf.outfile;++i){
 		int retval;
 		page_list_head * p_doc_new;
 		if (!file_exist(argv[conf.infile])){
@@ -218,7 +221,7 @@ int main(int argc, char *argv[]){
 		}
 		p_doc_new=pages_list_open(argv[i]);
 		if (p_doc_new==NULL){
-			message(FATAL,"File \"%s\" is not PS PDF format.\n",argv[i]);
+			message(FATAL,"File \"%s\" is not PS, PDF format.\n",argv[i]);
 			return 1;
 		}
 		retval=pages_list_cat(p_doc,p_doc_new);
