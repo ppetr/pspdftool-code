@@ -10,10 +10,14 @@
 	# define M_PI		3.14159265358979323846	/* pi */
 #endif
 /*v pripade ze neexistuje funkce, zavolat prislusnou dummy funkci*/
-#define callfunc(name,p_doc) func_implement_array.functions[\
-	(((p_doc)->type<func_implement_array.size) && ((p_doc)->type>0)\
-	 && (func_implement_array.functions[(p_doc)->type].name)\
-	 )?((p_doc)->type):(doc_register_format(NULL),0)].name
+#define callfunc(name,p_doc)                                  \
+	func_implement_array.functions[                                        \
+	     ( ((p_doc)->type < func_implement_array.size)                     \
+	       && ((p_doc)->type > 0)                                          \
+	       && (func_implement_array.functions[(p_doc)->type].name) )       \
+	     ? ((p_doc)->type)                                                 \
+	     : (doc_register_format(NULL), 0)                                  \
+           ].name
 
 
 

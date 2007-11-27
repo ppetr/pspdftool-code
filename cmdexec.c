@@ -1559,12 +1559,8 @@ void cmd_print_info(FILE *f){
 		if (cmd_commands[i].pages){
 			fprintf(f,"{page_ranges}");
 		}
-		if (strlen(cmd_commands[i].help)){
-			fprintf(f,"\n                  %s\n",cmd_commands[i].help);
-		}
-		else{
-			fprintf(f,"\n");
-		}
+
+		fprintf(f, "\n                  %s\n", (cmd_commands[i].help) && strlen(cmd_commands[i].help)  ? (cmd_commands[i].help) : ("missing"));
 	}
 }
 

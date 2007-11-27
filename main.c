@@ -23,14 +23,14 @@ enum {
 };
 
 char            pusage[][LLEN] = {
-	"Usage: pdftool [<options>] <commands> <infile> <outfile>",
+	"Usage: pdftool [<options>] <commands> <infile> ... <outfile>",
 	"  -h --help	Display this help screen",
 	"  -f --file    <command file>",
 /*	"  -q --quiet   Supress screen output",
 	"  -v --verbose ",*/
-	"commands: <cmd1> <cmd2> ... <cmd_n>",
+	"commands: \"<cmd1> <cmd2> ... <cmd_n>\"",
 	"command: name(arg_1, ... arg_name=arg_value){page_begin..page_end commands ... -page_begin..page_end}",
-	"commands  list:"
+	"list of commands:"
 };
 
 /* retezec obsahujici kratke volby */
@@ -205,7 +205,7 @@ int main(int argc, char *argv[]){
 		p_doc=pages_list_open(NULL);
 	}
 	if (p_doc==NULL){
-		message(FATAL,"File \"%s\" is not in compatible format.\n",argv[conf.infile]);
+		message(FATAL,"File \"%s\" is not PS PDF format.\n",argv[conf.infile]);
 		/*soubor se nepodarilo nacist*/
 		return 1;
 	}
@@ -218,7 +218,7 @@ int main(int argc, char *argv[]){
 		}
 		p_doc_new=pages_list_open(argv[i]);
 		if (p_doc_new==NULL){
-			message(FATAL,"File \"%s\" is not in compatible format.\n",argv[i]);
+			message(FATAL,"File \"%s\" is not PS PDF format.\n",argv[i]);
 			return 1;
 		}
 		retval=pages_list_cat(p_doc,p_doc_new);
