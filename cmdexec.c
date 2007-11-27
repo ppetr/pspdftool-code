@@ -1169,6 +1169,9 @@ static int cmd_modulo(page_list_head * p_doc, param params[], cmd_page_list_head
 	if (round==-1){
 		round=half?2*modulo:modulo;
 	}
+	else {
+		round = max(round,modulo);
+	}
 	while (pages_count(p_doc)%round){
 		page_list * pg_handle;
 		pg_handle=page_new_ext(NULL,p_doc->doc->type,p_doc->doc);
