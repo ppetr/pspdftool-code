@@ -304,15 +304,16 @@ Jazyk PostScript a jeho DSC komentáøe jsou obsáhlej¹í, ne¾ jsem uvedl v~této èás
 \section{Portable Document Format}
 Portable Document Format (PDF) \cite{pdf} byl vyvinut firmou Adobe. Jeho hlavní výhodou je zachování vìrnosti dokumentu pøi pøenosu souboru z~jednoho poèítaèe na druhý. Vzhledem k~tomu, ¾e mohou být nìkteré èásti PDF komprimovány, je vhodný také pro pøenos dokumentù pøes sí» Internet. Formát umo¾òuje nastavit nìkteré bezpeènostní atributy dokumentu, jako jsou: povolení tisku, povolení kopírováni z~dokumentu, povolení zmìn v~dokumentu a digitální podpis.
 
+
 PDF definuje následující základní objekty: bolean, celoèíselný a reálný typ, øetìzec, jméno, pole, slovník, stream a nulový objekt.
 Objekt typu Boolean mù¾e nabývat hodnot true a false. Èíselný typ je posloupnost èísel. Reálný typ jsou dvì èísla oddìlená desetinnou teèkou. 
 Øetìzce mohou být lexikální nebo hexadecimální. Jméno je posloupnost znakù zaèínající lomítkem. Pole na rozdíl od jazyku~C mù¾e obsahovat prvky rùzného typu.
 
 Slovník je seznam dvojic. První prvek z~dvojice je jméno a druhý je hodnota. Stream je objekt pro uschování libovolné posloupnosti bajtù.
-Stream se skládá ze slovníku, ve kterém je uvedeno, èím a jak je zakódovaná posloupnost bajtù (atribut Filter). Pokud posloupnost není zakódovaná, je tento atribut vynechán. Ve slovníku musí být uvedena polo¾ka Length s~délkou zakódované posloupnosti bajtù. Po slovníku následuje samotný bitový stream, který je uvozen identifikátory stream a endstream.  Uvnitø streamu nemù¾e být odkaz na ostatní objekty v~dokumentu.
+Stream se skládá ze slovníku, ve kterém je uvedeno, èím a jak je zakódovaná posloupnost bajtù (atribut Filter). Pokud posloupnost není zakódovaná, je tento atribut vynechán. Ve slovníku streamu musí být uvedena polo¾ka Length s~délkou zakódované posloupnosti bajtù. Po slovníku následuje samotný bitový stream, který je uvozen identifikátory {\it stream} a {\it endstream}.  Uvnitø streamu nemù¾e být odkaz na ostatní objekty v~dokumentu.
 Null objekt reprezentuje prázdný objekt.
 
-V~PDF je definován nepøímý objekt, pro jeho jednoznaènou identifikaci jsou pou¾ita dvì èísla: první urèuje objekt , druhé urèuje jeho revizi (minor number), novìj¹í verze má vy¹¹í èíslo. 
+V~PDF je definován nepøímý objekt (indirect object), pro jeho jednoznaènou identifikaci jsou pou¾ita dvì èísla: první urèuje objekt, druhé urèuje jeho revizi (minor number), novìj¹í verze má vy¹¹í èíslo. 
 Na tento objekt se lze odkázat pomocí následující syntaxe, {\it èíslo objektu revize R}. 
 
 Celý soubor je slo¾en z~nepøímých objektù. Pro rychlej¹í pøístup k~tìmto objektùm je v~souboru ulo¾ena tabulka, cross reference table. Obsahuje pro ka¾dý nepøímý objekt v~souboru následující záznam: jeho minor number a offset od zaèátku souboru, kde se objekt nachází. Díky této tabulce není potøeba pro pøístup ke konkrétnímu objektu celý soubor sekvenènì pøeèíst.
@@ -324,17 +325,20 @@ V~catalogu je uveden odkaz na strom stránek, pøípadnì informace o~zabezpeèení so
 Strom stránek je tvoøen ze~dvou typù objektu: uzlù (Pages, odkazy na dal¹í stránky, mohou obsahovat nìkteré spoleèné informace pro stránky v~podstromì) a listù (samotné stránky).
 Objekt stránky obsahuje odkaz na Content Stream, popisující vzhled stránky, resources, pøes které se Content Stream stránky odkazuje na objekty v~dokumentu (napø. typ fontu), rozmìry papíru (MediaBox), rozmìr bounding boxu (CropBox).
 
-Mezi èasto se vyskytující objekt v PDF patøí XObject. Jeho struktura je velmi podobná struktuøe stránky a mù¾e se vyu¾ít pro popis nìjakého grafického elementu. Je slo¾en ze slovníku a streamu. Ve slovníku mù¾e obsahovat resources,
-které pak mohou být pou¾ity ve streamu. Na samotný XObject se mù¾e odkazovat pøes své resources v Content Stremu stránka. Pøíkladem jeho pou¾ití mù¾e být vlo¾ení loga na stránku. 
+Mezi èasto se vyskytující objekt v PDF patøí XObject. Jeho struktura je velmi podobná struktuøe stránky a mù¾e se vyu¾ít pro popis nìjakého grafického elementu. Je slo¾en ze slovníku a streamu. Ve slovníku mù¾e obsahovat resources, 
+které pak mohou být pou¾ity ve streamu.
+Objekt stránky je pouze slovník a na stream,jen¾ jí poipsuje, se ozkazuje nepøímo.
+Na samotný XObject se mù¾e odkazovat pøes své resources v Content Streamu stránka. Pøíkladem jeho pou¾ití mù¾e být vlo¾ení loga na stránku. 
 Pak samotné logo je popsáno XObjectem.
 
 Stream pro popis obsahu stránky nebo XObjectu je syntakticky podobný jazyku PostScript, tj. prefixovou notací, pouze operátory  mají jiné názvy a nelze je pøedefinovat. Z~grafických elementù existují køivky, èáry, n-úhelníky, oøezové cesty a transformaèní matice.	
 
 Linearizované PDF je urèené pro prohlí¾ení pøes Internet. Jeho struktura umo¾òuje prohlí¾et dokument, ani¾ by byl celý sta¾en ze sítì 
 (èást cross reference table je na zaèátku souboru).
-Inkrementální update je zpùsob úpravy souboru, kdy se na konec dokumentu pøidají novì aktualizované objekty, nová tabulka referencí a trailer. Výhoda této aktualizace je ta, ¾e není potøeba pøepisovat celý dokument.
+Inkrementální update je zpùsob aktualizace, kdy se na konec dokumentu pøidají novì aktualizované objekty, nová tabulka referencí a trailer. Výhoda této aktualizace je ta, ¾e není potøeba pøepisovat celý dokument.
 
 Pro podrobnìj¹í specifikaci PDF doporuèuji nahlédnout Adobe PDF reference Manual.
+
 
 \chapter{Souèasné programy}
 Ve své práci jsem se zamìøil pøevá¾nì na programy PSUtils a pdftk, a to z~toho dùvodu jejich dostupnosti. Jsem si vìdom, ¾e existují následující programy FinePrint, Acrobat, ale vzhledem k~jejich dostupnosti (licence) jsem se zamìøil na ji¾ zmínìné dva. 
@@ -431,8 +435,8 @@ následovat seznam pøíkazu, které se na nìm vykonají.
    \{výbìr pøíkazy~\ldots\}}\}}
 \end{center}
 
-Program pou¾ívá kartézský souøadnicový systém s poèátkem v levém dolnímu rohu. 
-Osa x je vodorovná orientovaná smìrem z leva do prava a osa y má orientaci 
+Program pou¾ívá kartézský souøadnicový systém s~poèátkem v~levém dolnímu rohu. 
+Osa x je vodorovná orientovaná smìrem z~leva do prava a osa y má orientaci 
 svislou ze zdola na horu.
 
 
@@ -481,7 +485,7 @@ Pro tento pøípad jsem implementoval formát {\it dummydoc}, jeho¾ interface je za
 
 \section{Èást nezávislá na konkrétním formátu}
 Tato èást knihovny obsahuje èásti nezávislé na konkrétním formátu. Patøí sem interface pro práci a registraci konkrétních formátù, sada funkcí pro práci s~transformaèní maticí, funkce pro prací se seznamem stránek a dal¹í pomocné funkce. 
-Do této èásti mù¾eme øadit pøíkazový interpret, jeho¾ pøíkazy popí¹i pozdìji.
+Do této èásti mù¾eme øadit pøíkazový interpret, který pøíkazy popí¹i pozdìji.
 
 \section{Implementace konkrétního formátu}
 Pro ovìøení návrhu knihovny jsem implementoval následující formáty PostScript a PDF. Tato implementace je také ukázkou, jak by se mìly pøidávat dal¹í formáty.
@@ -491,40 +495,46 @@ Funkce naplní ve struktuøe ukazatele na rutiny pro práci s~novým formátem. Struk
 
 \subsection{PostScript}
 Od~PostScriptového souboru po¾adujeme, aby obsahoval DSC komentáøe. Bez nich nejsme schopni, ani¾ by bylo potøeba PostScript interpretovat,
-urèit, kde zaèíná a konèí pøíslu¹ná stránka dokumentu. PostScriptové soubory nelze jednodu¹e spojovat dohromady.
+urèit, kde zaèíná a konèí pøíslu¹ná stránka dokumentu. PostScriptové soubory, jak bylo uvedeno vý¹e, nelze jednodu¹e spojovat dohromady.
 
-Nástroj PSUtils umo¾òuje spojovat pouze soubory se stejným prologem. Moje implementace pro PS formát neumo¾òuje spojovat dokumenty.
+Nástroj PSUtils umo¾òuje spojovat pouze soubory se stejným prologem. Moje implementace pro PS formát neumo¾òuje spojovat ¾ádné  dokumenty.
 
 
 Funkce pro naètení dokumentu funguje následnovnì, vstupní soubor se ète po øádcích a zpracovávají se øádky s~DSC komentáøem. Za pomoci tìchto komentáøù lze
 soubor rozdìlit na následující èásti: hlavièku, procdef, docsetup, jednotlivé stránky a trailer. Ka¾dá èást ma nìjaký význam, viz kapitola o DSC komentaøích.
 
-U~stránky si pamatuji, kde se nachází ve zdrojovém souboru.
+U~stránky si pamatuji, kde se nachází její kód ve zdrojovém souboru.
 
 
 Proto¾e PS soubor mù¾e být velmi veliký (stovky MB), není rozumné jej naèíst celý do pamìti.
 
-Do sekce procdef se pøidají vlastní definice a redefinice potøebných PostScriptových operátorù.
+Do sekce procdef se pøidají vlastní definice a redefinice PostScriptových operátorù potøebných pro práci knihovny.
 Napøíklad zmìna operátoru {\it showpage} na prázdný a místo nìj definice nového.
 
-Samotné operace typu transformace, kreslení èar, psaní textu; jsou uskuteènìny pøidáním pøíslu¹ných PS operátorù na zaèátek  \uv{programu} stránky.
+Samotné operace typu transformace, kreslení èar, psaní textu; jsou uskuteènìny pøidáním pøíslu¹ných PS operátorù a jejich argumentù na zaèátek  \uv{programu} stránky.
 
 Spojení dvou stránek se provede spojením obsahù stránek, mezi jednotlivé stránky je vhodné pøidat operátory pro ulo¾ení a 
 obnovení grafického stavu interpretu PostScriptu. Na konec jednotlivých stránek se pøidá novì definovaný operátor pro zobrazení stránky.
 
 
 \subsection{PDF}
-U~PDF dokumentu je mo¾né implementovat v¹echny operace. V~dokumentu se pøeètou v¹echny objekty. Stránky se pøevedou na XObject. K~pùvodní stránce se vytvoøí nová stránka, která obsahuje XObject z~pùvodní stránky. U~ka¾dé stránky v~seznamu si pamatuji pøíslu¹né èíslo objektu, který ji reprezentuje. Pøi ukládání dokumentu se vygeneruje ze seznamu stránek
-strom stránek (dle specifikace PDF), odstraní se nepou¾ité objekty (prohledávání do hloubky od Catalog objektu).  Do souboru se zapí¹í v¹echny pou¾ité objekty a na konec se pøidá trailer a tabulka referencí.
+U~PDF dokumentu je mo¾né implementovat v¹echny operace. V~dokumentu se pøeètou v¹echny objekty. Objekty stránek se pøevedou na objekty XObject. K~pùvodní stránce se vytvoøí nová stránka, která obsahuje XObject z~pùvodní stránky. U~ka¾dé stránky v~seznamu si pamatuji pøíslu¹né èíslo objektu, který ji reprezentuje. Pøi ukládání dokumentu se vygeneruje ze seznamu stránek
+strom stránek (dle specifikace PDF), odstraní se nepou¾ité objekty (prohledáním do hloubky od Catalog objektu).  Do souboru se zapí¹í v¹echny pou¾ité objekty a na konec se pøidá trailer a tabulka referencí.
 
 Operace typu transformace, spojení dvou stránek do jedné, kreslení èar a psaní textu se týkají streamu pøíslu¹né stránky. Proto¾e jsme si vytvoøili z~pùvodních stránek XObjecty a nové stránky, které se na nì odkazují, mají stream v~nezakódované podobì. Není tedy potøeba implementovat jednotlivé filtry pro práci se streamem. Spojení dvou stránek odpovídá spojení dvou Content Streamù za sebe. Kreslení a transformace  odpovídá pøidáním pøíslu¹ných operátorù do Content Streamu stránky.
 Druhou výhodou daného øe¹ení je jednoduché slouèení resources stranky.
 
-Problém nastane, pokud chceme zkonvetrovat stránku, její¾ popis je slo¾en z více streamù. Pøímoèaré øe¹ení by bylo zkonvertovak ka¾dou èást XObject.
-Vzhledem k tomu, ¾e mohou být streamy mezi sebou závisle tak toto øe¹ení nemusi být korektní ve v¹ech pøípadech. Tento problém lze pouze vyøe¹it 
-slouèením více streamù do jednoho, k èemu¾ mù¾e být potøeba stream dekryptovat. Proto jsem doplnil do programu funkce pro dekompresi streamu v LZW a Dedlate.
+Problém nastane, pokud chceme zkonvetrovat stránku, její¾ popis je rozdìlen do více streamù. Pøímoèaré øe¹ení by bylo zkonvertovat ka¾dou èást na XObject.
+Vzhledem k tomu, ¾e mohou být streamy mezi sebou závisle, nemusi být tento pøevod korektní ve v¹ech pøípadech. Tento problém lze vyøe¹it pouze
+slouèením více streamù do jednoho. Pro tento úkon je potøeba stream dekryptovat. Proto jsem doplnil do programu funkce pro dekompresi streamu v LZW a Dedlate.
+Pokud nebude k~dispozici filtr pro práci se streamem, program vygeneruje varovaní a pou¾ije vý¹e citovaný nekorektní postup. Filtry jsou implementovány v~souboru {\it pdf\_filters}.c.
 
-Pro operaci spojení dvou dokumentù je potøeba v~jednom z~dokumentù pøeèíslovat objekty tak, aby nekolidovaly s~druhým dokumentem. Jedno mo¾né øe¹ení je zvý¹it v¹echna èísla objektù v ~dokumentu o~poèet objektù v~druhém dokumentu. 
+Pro operaci spojení dvou dokumentù je potøeba v~jednom z~dokumentù pøeèíslovat objekty tak, aby nekolidovaly s~druhým dokumentem. V~pspdftoolu je pou¾ito následující
+øe¹ení, v~pøipojovaném dokumentu se pøiète ke ka¾demu èíslu objektu èíslo udávající poèet objektù v~druhém souboru. 
+
+Implementace formatu plnì podporuje PDF do verze 1.4. Novìj¹í PDF obsahují napøíklad tato roz¹íøení: ObjectStreams a Cross-Reference Streams. 
+Proto¾e tato roz¹íøení nejsou èasto vyu¾ívána, nepova¾oval jsem za dùle¾ité, aby s~nimi umìl nástroj pracovat.
+K~jejich implementaci by bylo vhodné umìt pracovat se v¹emi filtry, které jsou definovány ve specifikaci PDF.
 	
 \section{Interpret pøíkazù}
 V~souèasné dobì je k~dané knihovnì napsán jediný u¾ivatelský agent, jednoduchý interpret pøíkazù.
