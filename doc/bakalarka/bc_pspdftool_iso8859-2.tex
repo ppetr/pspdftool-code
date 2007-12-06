@@ -18,6 +18,7 @@
 %\usepackage{index} % nutno pou¾ít v~pøípadì tvorby rejstøíku balíèkem makeindex
 %\usepackage{fancybox} % umo¾òuje pokroèilé rámeèkování :-)
 \usepackage{graphicx} % nezbytné pro standardní vkládání obrázkù do dokumentu
+\usepackage{appendix}
 
 %\usepackage[left=3cm]{geometry} % nastavení dané velikosti okrajù
 \usepackage[total={17cm,25cm}, top=3cm, left=2cm, includefoot]{geometry}
@@ -90,7 +91,7 @@ Katedra aplikované matematiky\\ % doplòte název katedry èi ústavu
 \ \vspace{10mm} 
 
 \noindent Na tomto místì bych chtìl podìkovat lidem, bez jejich¾ pomoci by nikdy tato práce 
-nevznikla. Mé díky patøí zejména Mgr. Martinu Mare¹ovi za vedení diplomové práce, za dobré rady 
+nevznikla. Mé díky patøí zejména Mgr. Martinu Mare¹ovi za vedení bakaláøské práce, za dobré rady 
 a vìcné pøipomínky. 
 
 \vspace{\fill} % nastavuje dynamické umístìní následujícího textu do spodní èásti stránky
@@ -112,7 +113,7 @@ Název práce: Pøedtisková pøíprava dokumentù\\
 Autor: Ale¹ ©nupárek\\
 Katedra (ústav): Katedra aplikované matematiky\\
 Vedoucí bakaláøské práce: Mgr. Martin Mare¹\\
-e-mail vedoucího: mj@ucw.cz\\
+e-mail vedoucího: mares@kam.mff.cuni.cz\\
 
 \noindent Abstrakt:  V~pøedlo¾ené práci se zabývám nìkterými tiskovými formáty (PDF, PostScript), 
 mo¾ností úprav hotových dokumentù pøed samotným tiskem.
@@ -126,9 +127,9 @@ který umo¾òuje provádìt nìkteré ze základních pøedtiskových úprav.\\
 \noindent
 Title: Preprinting preparation of documents\\
 Author: Ale¹ ©nupárek\\
-Department: Department Zof Applied Mathematics\\
+Department: Department of Applied Mathematics\\
 Supervisor: Mgr. Martin Mare¹\\
-Supervisor's e-mail address: mj@ucw.cz\\
+Supervisor's e-mail address: mares@kam.mff.cuni.cz\\
 
 \noindent Abstract: In the present work I study printing formats (PDF, PostScript) 
 and abilities of modifiing finished documents before printing.
@@ -143,72 +144,55 @@ In the last part of my work is design and implementation of my tool for some of 
 %%% Nedoporuèuje se pou¾ívat víc ne¾ dvì úrovnì èíslování kapitol, viz pøíklad ní¾e.
 
 \chapter{Úvod}
-Tato práce \uv{Pøedtisková pøíprava dokumentù} si klade za úkol návrh a implementaci knihovny pro práci s~tiskovými formáty,  vèetnì
- jednoduchého nástroje, pøíkazového interpretu, vyu¾ívajícího slu¾eb knihovny. 
+V~této práci, \uv{Pøedtisková pøíprava dokumentù}, zkoumám mo¾nosti úprav dokumentù v~tiskovém formátu. Nezabývám se nástroji pro
+tvorbu tìchto dokumentù, ani nezkoumám rùzné tiskové metody. Zabývám se pouze dokumenty v~tiskovém formátu a to konkrétnì v~PostScriptu a v~PDF.
 
-Tímto nástrojem lze s~dokumenty provádìt následující operace:
-zmìna rozmìrù stránky, selekce a pøeuspoøádání stránek nebo umístìní více stránek na jeden arch papíru.
-
-Bì¾nému u¾ivateli by mìl tento nástroj pomoci pøi tisku dokumentù ve formátu PostScript, nebo PDF.
-
-Pro práci jsem si vytyèil následující cíle:
-\begin{itemize}
-\item prozkoumat souèasná øe¹ení,
-\item navrhnout a implementovat obecnou knihovnu pro práci s~tiskovými formáty,
-\item implementovat knihovny pro práci s~konkrétním formátem (PostScript, PDF),
-\item vytvoøit pøíkazový interpret pracující s~touto knihovnou.
-\end{itemize}
+Práce je rozdìlena do nìkolika èástí. První èást vysvìtluje základní pojmy, které se týkají dokumentù a pøedtiskových úprav.
+Druhá èást popisuje jak fungují formáty PostScript a PDF s~ohledem na jejich pøedtiskové úpravy.
+Tøetí èásti je popis nìkterých souèasných nástrojù pro pøedtiskové úpravy dokumentù.
+Poslední èást se zabývá mnou vytvoøeným nástrojem pspdftool, který umí provádìt rùzné pøedtiskové úpravy ve formátech PostScript a PDF.
+Pøíkladem tìchto úprav mù¾e být: zmìna rozmìrù stránky, selekce a pøeuspoøádání stránek nebo umístìní více stránek na jeden arch papíru.
 
 \chapter {Dokumenty a práce s~nimi}
 
 \section {Dokument}
 Pod pojmem dokument si pøedstavme soubor na pamì»ovém médiu uchovávající nìjakou informaci. Na dokument urèený primárnì pro tisk klademe následující po¾adavky. 
 Musí definovat jednotlivé stránky, definovat jejich obsah a uchovávat jejich atributy.
-Obsah stránky je napøíklad soubor grafických objektù.
-Mezi základní atributy patøí  velikost papíru, rozmìry Bounding Boxu pøípadnì orientace textu. 
-Dokument mù¾e obsahovat informace pro nastavení tiskárny jako jsou volba papíru pro tisk, nebo nastavení duplexního (oboustranného) tisku.
+
 
 \section {Stránka}
 Stránka je soubor objektù, které se vytisknou na jeden arch papíru.
-Objektem mù¾e být èára, køivka, bitmapa, text, nebo jiný grafický útvar.
+Objektem mù¾e být text, èára, køivka, bitmapa, nebo jiný grafický útvar.
 
 Pro umístìní objektu na stránce je potøeba definovat souøadnicový systém. 
 Zpravidla se pou¾ívá kartézský souøadnicový systém, který má poèátek v~levém dolním rohu stránky. 
 Jeho x-ová souøadnice je orientovaná vodorovnì, zleva doprava, y-ová souøadnice je orientovaná svisle, smìrem zdola nahoru. 
 Základní jednotkou tohoto systému mù¾e být tiskaøský bod.\footnote{1 bod obvykle odpovídá 1/72 palce}
 
-Na jednotlivé objekty je mo¾no aplikovat afinní transformace reprezentované transformaèní maticí $3\times3$.
-Pomocí transformace lze realizovat základní operace, jako je otoèení, posunutí nebo zmìna velikosti.
-Transformace jsou uzavøené na skládání.
-
-Mezi dal¹í atributy popisující konkrétní stránky patøí: velikost papíru a Bounding Box.
-Bounding Box urèuje obdélníkovou oblast, do které se vykreslí v¹echny objekty z~pøíslu¹né stránky.
+Mezi atributy popisující konkrétní stránky patøí: velikost papíru, orientace textu a Bounding Box.
+Bounding Box urèuje nejmen¹í obdélníkovou oblast, do které se vykreslí v¹echny objekty z~pøíslu¹né stránky.
 
 \section {Formáty dokumentù}
-Formát dokumentu urèuje, jakým zpùsobem se budou reprezentovat v~souboru informace, obsa¾ené v~dokumentu.
-Ke tvorbì tiskového dokumentu se bì¾nì pou¾ívá editor. Editorem mù¾e být textový nebo grafický editor. 
-Bìhem tisku je obsah dokumentu z~editoru pøeveden do vhodného formátu pro tisk.
-Dle tohoto hlediska mù¾eme rozdìlit formáty na následující dva druhy: formáty editorù a formáty urèené k tisku.
+Formát dokumentu urèuje,  jaké informace a jakým zpùsobem budou reprezentovány v~souboru.
+Pro vytvoøení a úpravu dokumentu se pou¾ívá editor. Pokud je dokument urèený k~tisku, obsahuje pøíslu¹ný editor funkci,
+která vygeneruje ze vstupního souboru  výstup do vhodného formátu pro tisk.
+Dle tohoto hlediska mù¾eme rozdìlit formáty na následující dva druhy: formáty editorù a formáty urèené k~tisku.
 
 Formát z editoru nemusí obsahovat dostateèné informace pro výsledný tisk.
 U~bitmapových formátù èasto chybí údaj na jaký rozmìr papíru a jak se konkrétnì vytisknou.
-Jeho dal¹ím nedostatkem je pøípadná závislost na konkrétní platformì. Napøíklad pro korektní zobrazení dokumentu z~OpenOffice potøebujeme
+Jeho dal¹ím nedostatkem je pøípadná závislost na konkrétním prostøedí. Napøíklad pro korektní zobrazení dokumentu z~OpenOffice potøebujeme
 mít nainstalované konkrétní øezy písma. Tato závislost mù¾e zpùsobit rozdílné výsledky tisku na jiných platformách pøi pou¾ití jiného fontu.
 
-U~formátù k~tisku po¾adujme u~stránek vzájemnou nezávislost s~mo¾ností je od sebe oddìlit.
-Dále by mìl být nezávislý na konkrétní platformì.
-Pro maximálnì vìrohodný pøenos tiskových dokumentù byl navr¾en formát PDF (portable document formát).
-Ke komunikaci s~tiskárnou bìhem tisku dokumentu  je èasto pou¾íván jazyk PostScript. 
+Formáty pro tisk, na rozdíl od formátù editorových, nejsou urèeny k~dal¹ímu editováni, av¹ak nìkteré operace lze s~nimi také (jak uká¾eme dále) provádìt.
+Tisknutelným formátem mù¾e být jazyk urèený pøímo pro tiskárnu (PostScript, PCL, GDI, HPGL), nebo formát, z~kterého je mo¾no pøímo tisknout (PDF).
+Pøevod dokumentu na jazyk pro tiskárnu mù¾e mít jistá omezení,napøíklad  závislost na konkrétním typu tiskárny. 
 Dále se budu zabývat formáty PostScript a PDF.
 
 
 
 \section {Pøedtiskové úpravy}
-Pøi tvorbì dokumentù urèených pro tisk se pou¾ívá textový editor, pøípadnì sázecí nebo jiný grafický program. Aby bylo mo¾né dokument vytisknout, je ho potøeba pøevést na tisknutelný formát.
-Tisknutelným formátem mù¾e být jazyk urèený pøímo pro tiskárnu (PostScript, PCL, GDI, HPGL), nebo formát, z~kterého je mo¾no pøímo tisknout (PDF). Výhodou pøevodu mù¾e být mo¾nost, vytisknout dokument nìkde jinde, bez nutnosti pou¾ití aplikace, ve které dokument vznikl. Pøevod dokumentu na jazyk pro tiskárnu mù¾e mít jistá omezení,napøíklad  závislost na konkrétním typu tiskárny.
 
-Pøedtiskové úpravy se týkají formátù explicitnì urèených pro tisk.
-Patøí mezi nì pøeskupení, otoèení, selekce, zmìna formátu papíru, zvìt¹ení èi zmen¹ení stránek, ale nepatøí sem zmìna  obsahu,
+Pøedtiskové úpravy se týkají formátù explicitnì urèených pro tisk, patøí mezi nì pøeskupení, otoèení, selekce, zmìna formátu papíru, zvìt¹ení èi zmen¹ení stránek, ale nepatøí sem zmìna  obsahu,
 formátu, stylu odstavce nebo jiný zásah do struktury stránky.
 
 Dùvodem pro pøedtiskové úpravy mù¾e být absence dané úpravy v~aplikaci, ve které dokument vznikl, nebo u~hotových dokumentù, k~nim¾ nemáme pùvodní data.
@@ -217,43 +201,59 @@ Pøíkladem mohou být dokumenty od tøetí strany, jako jsou rùzné dokumentace.
 Nìkteré ovladaèe tiskáren umo¾òují nìkteré z~tìchto operací, ale obecnì se jedná o~proprietární roz¹íøení konkrétního dodavatele ovladaèe.
 Proto je vhodné mít mo¾nost tyto operace provést pomocí nìjakého nezávislého nástroje.
 
-V~souèasné dobì existují nástroje pro pøedtiskovou úpravu formátù PostScript a PDF (pstops, pdftk). Tyto aplikace jsou rùzné a mají rùzná rozhraní.
-Proto jsem se rozhodl vytvoøit univerzální nástroj, který bude schopen pracovat se stejným rozhraním a rùznými formáty. Bude také schopen provádìt operace, které souèasná øe¹ení neobsahují.
-
 \chapter{Vybrané formáty}
 V~této kapitole popí¹i formáty PostScript a PDF.
 Tyto formáty jsem si zvolil, proto¾e
 jsou èasto pou¾ívané, existuje k~nim dostupná dokumentace, 
-jsou vhodné pro tisk a je  na nich mo¾né provést pøedtiskové úpravy.
+jsou vhodné pro tisk a je  na nich mo¾né provést nìkteré z~pøedtiskových úpravy.
 
-Pøedtiskové úpravy by bylo mo¾né aplikovat také na formáty HPGL a PCL. 
-S~rozumnì omezenou mno¾inou operací také na OpenOffice dokumenty, nebo na MS Office dokumenty. 
+%Pøedtiskové úpravy by bylo mo¾né aplikovat také na formáty HPGL a PCL. 
 
-\section{Grafický meta formát PostScript}
-PostScript \cite{postscript} je programovací jazyk. Byl navr¾en firmou Adobe.  Je primárnì urèen pro tisk dokumentù na laserových tiskárnách, ale mù¾e být pou¾it pro popis grafiky i~na jiném zaøízení, napøíklad obrazovce poèítaèe. Na jeho zobrazení mù¾eme pou¾ít GhostScript \cite{ghostscript}.
+\section{Grafický meta-formát PostScript}
+PostScript \cite{postscript} je programovací jazyk. Byl navr¾en firmou Adobe.  Je primárnì urèen pro tisk dokumentù na laserových tiskárnách, 
+ale mù¾e být pou¾it pro popis grafiky i~na jiném zaøízení, napøíklad obrazovce poèítaèe. 
+Pro jeho zobrazení mù¾eme pou¾ít GhostScript \cite{ghostscript}.
 
-PostScript je turingovsky úplný programovací jazyk s~prefixovou notací.  Je podobný svou syntaxí jazyku Forth, ale na rozdíl od nìj je specializovaný pro popis grafického výstupu na stránku. Mezi základní elementy jazyka PostScript  patøí: oblouk, B\`ezeriova køivka a úseèka. Pro písmo existují speciální pøíkazy, které vykreslí písmena z~køivek.
+PostScript je turingovsky úplný programovací jazyk s~prefixovou notací.
+Je podobný svou syntaxí jazyku Forth, ale na rozdíl od nìj je specializovaný pro popis grafického výstupu na stránku.
+Komentáø v~PS souboru zaèíná znakem \% a konèí koncem øádky.
+Mezi základní elementy jazyka PostScript  patøí: oblouk, B\`ezeriova køivka a úseèka. Pro písmo existují speciální pøíkazy, které vykreslí písmena z~køivek.
 
-PostScript pracuje s~dvìma souøadnicovými systémy: device space a user space. Device space je souøadnicový systém cílového výstupního zaøízení. User space je souøadnicový  systém, ve kterém se zadává poloha objektù (napø. èar). Poèátek tohoto systému je v levém dolním rohu.  X-ová osa je orientována zleva do pravá a y-ová osa vede zdola nahoru. Vzdálenost dvou bodù (tiskaøských bodù) v~tomto systému je 1/72 palce. Pøevod mezi user space a device space je realizován pomocí transformaèní matice, která reprezentuje afinní transformaci.
+PostScriptový interpret vyu¾ívá nìkolik zásobníkù. Mezi nejdùle¾itìj¹í patøí zásobník na operandy pøíkazù a zásobník pro ulo¾ení slovníkù.
+Slovník je kolekce párù klíè a hodnota. Pøidáním nového záznamu do slovníku lze definovat pojmenované konstanty nebo nové pøíkazy,
+pøípadnì pøedefinovat stávající pøíkazy.
+
+PostScript pracuje s~dvìma souøadnicovými systémy: device space a user space. Device space je souøadnicový systém cílového výstupního zaøízení.
+User space je souøadnicový  systém, ve kterém se zadává poloha objektù (napø. èar).
+Poèátek tohoto systému je v levém dolním rohu.  X-ová osa je orientována zleva do pravá a y-ová osa vede zdola nahoru.
+Vzdálenost dvou bodù (tiskaøských bodù) v~tomto systému je 1/72 palce. 
+Pøevod mezi user space a device space je realizován pomocí transformaèní matice, která reprezentuje afinní transformaci.
 
 Cesta je kolekce èar a køivek umístìných na stránce, ale neobsahuje informaci o~tom, jakým zpùsobem bude vykreslena.
-Aktuální cesta je právì rozkreslená cesta.
-Cesta mù¾e napøíklad definovat oøez, tj. oblast, za kterou se nebude vykreslovat.
-Graphics State jsou rùzná nastavení popisující stav grafického systému. Mezi nì patøí:
-aktuální cesta, aktuální oøezová cesta, aktuální font, aktuální transformaèní matice, barva, typ vykreslované èáry. Tento stav je mo¾né ulo¾it, respektive obnovit, pomocí operátorù gsave a grestore.
+Aktuální cesta je právì rozkreslená cesta. Cesta mù¾e definovat oøez, tj. oblast, za kterou se nebude vykreslovat, nebo
+být køivkou urèité ¹íøky a barvy.
 
-PostScriptový interpret vyu¾ívá nìkolik zásobníkù. Mezi nejdùle¾itìj¹í patøí zásobník na operandy pøíkazù a zásobník pro ulo¾ení slovníkù. Slovník je kolekce párù klíè a hodnota. Takto lze definovat pojmenované konstanty nebo nové pøíkazy, pøípadnì pøedefinovat stávající pøíkazy. Zmìna stávajících pøíkazù je velmi u¾iteèná, lze napøíklad pøedefinovat {\it showpage}, operátor pro vykreslení stránky na prázdný. Tím mù¾eme za pomoci transformaèní matice naskládat více stránek na jednu.
+Graphics State jsou rùzná nastavení popisující stav grafického systému. Mezi nì patøí: aktuální cesta, aktuální oøezová cesta,
+aktuální font, aktuální transformaèní matice, barva, typ vykreslované èáry.
+Tento stav je mo¾né ulo¾it, respektive obnovit, pomocí operátorù {\it gsave} a {\it grestore}.
 
-Komentáø v~PS souboru zaèíná znakem \% a konèí koncem øádky.
+\section{Afinní transformace}
+Afinní transformace se aplikuje na jednotlivé grafické objekty. Touto transformací lze popsat v¹echny bì¾né transformace, jako je,
+posunutí, otoèení nebo  zmìna velikosti. Lze jí reprezentovat pomocí transformaèní maticí $3\times3$. Tuto reprezentaci pou¾ívá 
+PostScript a PDF.
+Jednotlivé transformace jsou uzavøené na skládání a v~pøípadì maticové reprezentace se jedná o~násobení matic.
+
+
 \section{DSC komentáøe}
 PostScript nedefinuje  ¾ádnou strukturu dokumentu, nelze tedy bez jeho interpretace rozpoznat jednotlivé stránky.
 Tento problém vyøe¹ila firma Adobe zavedením speciálních komentáøù DSC (document structure comment) \cite{dsc} . DSC zaèíná na zaèátku øádky znaky   \%\%. 
-Díky tìmto komentáøùm lze rozdìlit dokument na následující èásti:  Prolog a Script.
+Díky tìmto komentáøùm lze rozdìlit dokument na následující èásti:  prolog a script.
 
 Do prologu patøí header section, defaults section a procedure section. Èást Script mù¾eme rozdìlit na èást document setup, samostatné stránky a trailer.
 
 Na zaèátku souboru s~DSC komentáøi je øádek urèující verzi DSC, souèasná verze je 3.0. Po této øádce následuje vý¹e zmínìná hlavièka, jedná se o~souvislou oblast komentáøù (neobsahuje pøíkazy pro PS interpret).
-Hlavièka konèí komentáøem {\it \%\%EndComents} nebo prázdným øádkem. V~hlavièce jsou uvedeny základní informace o~dokumentu, jako jsou: 
+Hlavièka konèí komentáøem {\it \%\%Komentáø v~PS souboru zaèíná znakem \% a konèí koncem øádky.
+EndComments} nebo prázdným øádkem. V~hlavièce jsou uvedeny základní informace o~dokumentu, jako jsou: 
 poèet stránek {\it \%\%Pages: poèet stránek {\tt |}  (atend) }, orientace textu na stránce {\it \%\%Orientation: Portrait {\tt |}  Landscape}, 
 bounding box, poøadí stránek v~dokumentu {\it \%\%PageOrder: Ascend {\tt |}  Descend {\tt |}  Special {\tt |}  (atend)}.
 Hodnota {\tt (atend)} znamená, ¾e hodnota pøíslu¹né vlastnosti bude uvedena na konci souboru v~traileru.
@@ -302,39 +302,40 @@ Po v¹ech stránkách následuje Trailer. Mù¾e obsahovat kód pro uvedení PS interpre
 Jazyk PostScript a jeho DSC komentáøe jsou obsáhlej¹í, ne¾ jsem uvedl v~této èásti, podrobnìj¹í informace jsou uvedeny ve specifikaci PostScriptu a DSC komentáøù.
 
 \section{Portable Document Format}
-Portable Document Format (PDF) \cite{pdf} byl vyvinut firmou Adobe. Jeho hlavní výhodou je zachování vìrnosti dokumentu pøi pøenosu souboru z~jednoho poèítaèe na druhý. Vzhledem k~tomu, ¾e mohou být nìkteré èásti PDF komprimovány, je vhodný také pro pøenos dokumentù pøes sí» Internet. Formát umo¾òuje nastavit nìkteré bezpeènostní atributy dokumentu, jako jsou: povolení tisku, povolení kopírováni z~dokumentu, povolení zmìn v~dokumentu a digitální podpis.
-
+Portable Document Format (PDF) \cite{pdf} byl vyvinut firmou Adobe. Jeho hlavní výhodou je zachování vìrnosti dokumentu pøi pøenosu souboru z~jednoho poèítaèe na druhý.
+Vzhledem k~tomu, ¾e mohou být nìkteré èásti PDF komprimovány, je také vhodný pro pøenos dokumentù pøes sí» Internet.
+Formát umo¾òuje nastavit nìkteré bezpeènostní atributy dokumentu, jako jsou: povolení tisku, povolení kopírováni z~dokumentu, povolení zmìn v~dokumentu a digitální podpis.
 
 PDF definuje následující základní objekty: bolean, celoèíselný a reálný typ, øetìzec, jméno, pole, slovník, stream a nulový objekt.
 Objekt typu Boolean mù¾e nabývat hodnot true a false. Èíselný typ je posloupnost èísel. Reálný typ jsou dvì èísla oddìlená desetinnou teèkou. 
 Øetìzce mohou být lexikální nebo hexadecimální. Jméno je posloupnost znakù zaèínající lomítkem. Pole na rozdíl od jazyku~C mù¾e obsahovat prvky rùzného typu.
+Slovník je seznam dvojic. První prvek z~dvojice je jméno a druhý je hodnota. Null objekt reprezentuje prázdný objekt.
 
-Slovník je seznam dvojic. První prvek z~dvojice je jméno a druhý je hodnota. Stream je objekt pro uschování libovolné posloupnosti bajtù.
-Stream se skládá ze slovníku, ve kterém je uvedeno, èím a jak je zakódovaná posloupnost bajtù (atribut Filter). Pokud posloupnost není zakódovaná, je tento atribut vynechán. Ve slovníku streamu musí být uvedena polo¾ka Length s~délkou zakódované posloupnosti bajtù. Po slovníku následuje samotný bitový stream, který je uvozen identifikátory {\it stream} a {\it endstream}.  Uvnitø streamu nemù¾e být odkaz na ostatní objekty v~dokumentu.
-Null objekt reprezentuje prázdný objekt.
+Stream je objekt pro uschování libovolné posloupnosti bajtù. Je slo¾en ze slovníku, po kterém následuje samotný bitový stream, který je uvozen identifikátory {\it stream} a {\it endstream}.
+Slovník streamu musí obsahovat povinný atribut {\it Length}, který udává délku bitového streamu. Nepovinný atribut {\it Filter} udává, jak je zakódovaný bitový stream.
+Uvnitø streamu nemù¾e být odkaz na ostatní objekty v~dokumentu.
 
-V~PDF je definován nepøímý objekt (indirect object), pro jeho jednoznaènou identifikaci jsou pou¾ita dvì èísla: první urèuje objekt, druhé urèuje jeho revizi (minor number), novìj¹í verze má vy¹¹í èíslo. 
+V~PDF je definován nepøímý objekt (indirect object). Nepøímým objektem mù¾e být libovolný objekt. Pro jeho jednoznaènou identifikaci jsou pou¾ita dvì èísla: první urèuje objekt, druhé urèuje jeho revizi, novìj¹í verze objektu má vy¹¹í èíslo.
+Syntakticky nepøímý objekt vypadá následovnì: {\it èíslo objektu revize obj popis samotného objektu endobj }.
 Na tento objekt se lze odkázat pomocí následující syntaxe, {\it èíslo objektu revize R}. 
 
-Celý soubor je slo¾en z~nepøímých objektù. Pro rychlej¹í pøístup k~tìmto objektùm je v~souboru ulo¾ena tabulka, cross reference table. Obsahuje pro ka¾dý nepøímý objekt v~souboru následující záznam: jeho minor number a offset od zaèátku souboru, kde se objekt nachází. Díky této tabulce není potøeba pro pøístup ke konkrétnímu objektu celý soubor sekvenènì pøeèíst.
-Pozice, na které se tabulka nachází, je uvedena na následující øádce za identifikátorem startxref. Tento identifikátor následuje za trailerem.
+Celý soubor je slo¾en z~nepøímých objektù. Pro rychlej¹í pøístup k~tìmto objektùm je v~souboru ulo¾ena tabulka, cross reference table.
+Obsahuje pro ka¾dý nepøímý objekt v~souboru následující záznam: jeho minor number a offset od zaèátku souboru, kde se objekt nachází.
+Díky této tabulce není potøeba pro pøístup ke konkrétnímu objektu celý soubor sekvenènì pøeèíst.
+Pozice v souboru, na které se tabulka nachází, je uvedena na následující øádce za identifikátorem startxref. Tento identifikátor následuje za trailerem.
  
-Na konci souboru je sekce trailer. Jedná se o~slovník, ve kterém je odkaz na catalog objekt. Pokud byl dokument inkrementálnì aktualizován, nebo se jedná o~linearizované PDF, nachází se v~traileru odkaz na pøedchozí trailer. 
+Na konci souboru je sekce trailer. Jedná se o~slovník, ve kterém je odkaz na catalog objekt. Pokud byl dokument inkrementálnì aktualizován, nachází se v~traileru odkaz na pøedchozí trailer. 
 V~catalogu je uveden odkaz na strom stránek, pøípadnì informace o~zabezpeèení souboru a dal¹í informace, globálnì platné pro dokument.
 
 Strom stránek je tvoøen ze~dvou typù objektu: uzlù (Pages, odkazy na dal¹í stránky, mohou obsahovat nìkteré spoleèné informace pro stránky v~podstromì) a listù (samotné stránky).
-Objekt stránky obsahuje odkaz na Content Stream, popisující vzhled stránky, resources, pøes které se Content Stream stránky odkazuje na objekty v~dokumentu (napø. typ fontu), rozmìry papíru (MediaBox), rozmìr bounding boxu (CropBox).
+Objekt stránky je slovník. Obsahuje odkaz na {\it Content Stream}, popisující vzhled stránky, resources, pøes které se {\it Content Stream} stránky odkazuje na objekty v~dokumentu (napø. typ fontu), rozmìry papíru (MediaBox), rozmìr bounding boxu (TrimBox).
 
-Mezi èasto se vyskytující objekt v PDF patøí XObject. Jeho struktura je velmi podobná struktuøe stránky a mù¾e se vyu¾ít pro popis nìjakého grafického elementu. Je slo¾en ze slovníku a streamu. Ve slovníku mù¾e obsahovat resources, 
-které pak mohou být pou¾ity ve streamu.
-Objekt stránky je pouze slovník a na stream,jen¾ jí poipsuje, se ozkazuje nepøímo.
-Na samotný XObject se mù¾e odkazovat pøes své resources v Content Streamu stránka. Pøíkladem jeho pou¾ití mù¾e být vlo¾ení loga na stránku. 
-Pak samotné logo je popsáno XObjectem.
+Mezi èasto se vyskytující objekt v PDF patøí XObject. Jedná se o stream, struktura jeho slovníku je velmi podobná struktuøe slovníku popisujícího stránku.  Pou¾ívá se pro popis nìjakého grafického elementu.
+Pøíkladem jeho pou¾ití mù¾e být vlo¾ení loga na stránku, které je popsáno XObjectem.
 
-Stream pro popis obsahu stránky nebo XObjectu je syntakticky podobný jazyku PostScript, tj. prefixovou notací, pouze operátory  mají jiné názvy a nelze je pøedefinovat. Z~grafických elementù existují køivky, èáry, n-úhelníky, oøezové cesty a transformaèní matice.	
+Stream pro popis obsahu stránky nebo XObjectu je syntakticky podobný jazyku PostScript, tj. prefixovou notací, pouze operátory  mají jiné názvy a nelze je pøedefinovat.
+Z~grafických operátorù existují køivky, èáry, n-úhelníky, oøezové cesty a transformaèní matice.		
 
-Linearizované PDF je urèené pro prohlí¾ení pøes Internet. Jeho struktura umo¾òuje prohlí¾et dokument, ani¾ by byl celý sta¾en ze sítì 
-(èást cross reference table je na zaèátku souboru).
 Inkrementální update je zpùsob aktualizace, kdy se na konec dokumentu pøidají novì aktualizované objekty, nová tabulka referencí a trailer. Výhoda této aktualizace je ta, ¾e není potøeba pøepisovat celý dokument.
 
 Pro podrobnìj¹í specifikaci PDF doporuèuji nahlédnout Adobe PDF reference Manual.
@@ -346,7 +347,8 @@ Ve své práci jsem se zamìøil pøevá¾nì na programy PSUtils a pdftk, a to z~toho d
 PSUtils \cite{psutils} jsou sadou nástrojù pro práci s~PostScriptovými dokumenty. Mezi tyto programy patøí: psnup (uspoøádání více stránek na jednu), psselect (výbìr jednotlivých stránek z~dokumentu), pstops (nástroj pro obecné transformace), psbook (tvorba tiskových signatur pro tisk bookletù) a psresize (zmìna rozmìrù stránek). PSUtils jsou napsány v~jazyce~C a obsahují nìkolik skriptù napsaných v~perlu.
 
 PSUtils umí vìt¹inu pøedtiskových operací, které je mo¾né provádìt s~dokumentem pøed tiskem. Neumí v¹ak následující operace: zrcadlení stránek,
-kreslení èi psaní textu na stránku. O~tyto operace lze nástroj snadno roz¹íøit.
+kreslení èi psaní textu na stránku. O~tyto operace lze nástroj snadno roz¹íøit. PSUtils umí spojit nìkolik dokumentù do jednoho, ale pouze takové, které mají stejný prolog.
+
 
 \section{Pdftk}
 Jedná se o~nástroj \cite{pdftk} napsaný v~jazyce Java. Tímto programem je mo¾né provádìt následující operace: spojení dvou dokumentù do jednoho,
@@ -355,8 +357,9 @@ PDF a dal¹í specifické úkony pro PDF formát. PDFTk umo¾òuje provádìt úkony, kter
 Souèasným nedostatkem tohoto programu jsou: uspoøádání více stránek na jeden arch papíru a doplnìní textu na stránku.
 
 \chapter{Pspdftool}
-Jedná se o~návrh a implementaci øe¹ení pro základní úpravy dokumentu pøed tiskem. Pspdftool je navr¾en s~ohledem
-na mo¾nost roz¹íøení o~dal¹í formáty.
+Vý¹e zmínìné nástroje pro pøedtiskovou úpravu dokumentù se vzájemnì li¹í ve svém u¾ivatel\-ském rozhraní. Proto jsem se rozhodl vytvoøit univerzální nástroj,
+který bude schopen pracovat se stejným rozhraním a rùznými formáty. Bude také schopen provádìt operace, které souèasná øe¹ení neobsahují.
+Nástroj jsem navrhl s~ohledem na mo¾nost jeho roz¹íøení o~dal¹í formáty.
 \section {U¾ivatelská pøíruèka}
 Program pspdftool je konzolová aplikace, spou¹tí se z pøíkazové  øádky.
 Programu je potøeba pøedat jako argument pøíkazy, nebo soubor s pøíkazy, které
@@ -381,6 +384,7 @@ výstupní soubor. Jednotlivé pøíkazy se mezi sebou oddìlují bílými znaky
 
 Pøíkaz se skládá ze tøí èástí: názvu, jeho parametrù a selektoru stránek.
 Název je posloupnost znakù identifikující typ pøíkazu.  
+
 Sekce parametru pøíkazu zaèíná levou a konèí pravou kulatou závorkou.
 Parametry mohou být
 následujících typu: celoèíselného, desetinného, rozmìru, øetìzce, nebo
@@ -395,18 +399,18 @@ Jednotlivé parametry pøíkazu jsou mezi sebou oddìleny èárkou.
 Parametry pøíkazu je mo¾né zadávat poziènì, nebo je explicitnì pojmenovat.
 Pozièní parametry musí v¾dy být pøed pojmenovanými.
 
-Nìkteré pøíkazy mohou mít uvedenou výchozí hodnotu parametru. Potom není nutné
+Nìkteré parametry mohou mít uvedenou výchozí hodnotu. Potom není nutné
 tento argument explicitnì uvádìt.
 
 \subsubsection*{pøíklady:}
-\begin{center}
+
 \begin{tabular}{lp{10 cm}}
-	foo    &    pøíkaz bez parametru\\
-	foo(a=1) &  pøíkaz {\tt foo}, kterému je je nastaven parametr {\it a} na 1\\
-	foo(1)    & pøíkaz {\tt foo}, kterému je první parametr nastaven na 1\\
-	foo(a=1, 1)& pojmenovaný argument pøed pozièním, chybnì \\
+	{\tt foo}    &    pøíkaz bez parametru\\
+	{\tt foo(a=1)} &  pøíkaz {\tt foo}, kterému je je nastaven parametr {\it a} na 1\\
+	{\tt foo(1)} & pøíkaz {\tt foo}, kterému je první parametr nastaven na 1\\
+	{\tt foo(a=1, 1)}& pojmenovaný argument pøed pozièním, chybnì \\
 \end{tabular}
-\end{center}
+
 
 Poslední èástí je selektor stránek, zaèíná levou a konèí pravou slo¾enou
 závorkou. Selektor je skupina výbìrù stránek, které jsou mezi sebou oddìleny 
@@ -416,7 +420,6 @@ se o výbìr z konce seznamu, bì¾nì se indexuje od zaèátku. Za výbìrem mù¾e
 následovat seznam pøíkazu, které se na nìm vykonají.
 
 \subsubsection*{pøíklady:}
-\begin{center}
 \begin{tabular}{lp{8 cm}}
 	{\tt 1}        &  výbìr stánky 1\\
 	{\tt 1..2}      & výbìr stránek 1 a¾ 2 (vèetnì 2) \\
@@ -424,10 +427,10 @@ následovat seznam pøíkazu, které se na nìm vykonají.
 	{\tt -1..2}     & výbìr poslední a pøedposlední stránky,  \uv{od konce seznamu výbìr první a druhé}\\
 	{\tt foo(a)\{1..2 foo1\}} & pøíkaz {\tt foo} s parametrem {\it a} a selektorem {\it1..2}, na který se aplikuje pøíkaz {\tt foo1}\\
 	foo\{1..2 -1..2\} & pøíkaz {\tt foo} bez parametru a selektory {\it 1..2} a {\it -1..2}\\
-	{\tt pspdftool "foo" in.pdf out.pdf}  & naète soubor in.pdf aplikuje na seznam stránek pøíkaz foo a výsledek ulozi do souboru out.pdf (uvozovky kolem pøíkaz jsou kvùli Schellu)\\
+	{\tt pspdftool "foo" in.pdf out.pdf}  & naète soubor in.pdf aplikuje na seznam stránek pøíkaz foo a výsledek ulo¾í do souboru out.pdf (uvozovky kolem pøíkaz jsou kvùli shellu)\\
 	{\tt pspdftool -f mycmds.txt in.pdf out.pdf } & na rozdíl od pøedchozího se budou èíst pøíkazy ze souboru mycmds.txt\\
 \end{tabular}
-\end{center}
+\vspace{5mm}
 
 \subsubsection*{syntaxe pøíkazu:}
 \begin{center}
@@ -436,38 +439,170 @@ následovat seznam pøíkazu, které se na nìm vykonají.
 \end{center}
 
 Program pou¾ívá kartézský souøadnicový systém s~poèátkem v~levém dolnímu rohu. 
-Osa x je vodorovná orientovaná smìrem z~leva do prava a osa y má orientaci 
-svislou ze zdola na horu.
+Osa x je vodorovná orientovaná smìrem zleva doprava a osa y má orientaci 
+svislou ze zdola na horu. Rozmìry papíru je mo¾né zadat názvem, v tom pøípadì se jedná o identifikátor, nebo explicitnì pomocí dvou èísel, ¹íøky a vý¹ky.
+Název pøíkazù, u kterých se explicitnì zadává rozmìr papíru, konèí èíslovkou 2. Napøíklad k~pøíkazu {\it crop} existuje varianta {\it crop2}.
+
+\subsection{Popis \uv{u¾iteèných pøíkazù}}
+Asi mezi nejèastìj¹í pøedtiskovou úpravou dokumentu patøi \uv{transformace n stránek na jeden arch papíru}.
+K tomu se hodí  pøíkaz nup.
+
+\vspace{5mm}
+\begin{tabular}{lp{10 cm}}
+{\tt nup(2)}& otoèí stránku o~90 stupòù a pøerovná dvì stránky na jednu\\
+{\tt nup(4)}&  pøeskládá ètyøi stránky na jednu bez rotace\\
+{\tt nup(1,2,rotate=90)} & je ekvivalent pøíkazu nup(2), v x-ove ose 1 stránka (vodorovnì) a v y-ove ose 2 stránky (svisle)\\
+{\tt nup(2,2,paper=a4)} & je ekvivalentní pøíkazu nup(4) akorát výsledná stránka má formát a4\\
+\end{tabular}
+\vspace{5mm}
+Dal¹í u¾iteèné parametry pøíkazu nup  jsou: frame (orámovaní), kde èíslo udává ¹íøku èáry, 
+center (výchozí on výsledek je centrován, off nic se necentruje, final centruje se a¾ výsledná stránka),
+dx,dy (minimalni ¹íøka mezi stránkami), orient (postup kladeni stránek na stránku, portrait zleva doprava, s hora dolu, landscape zprava doleva z hora dolu).
+Pokud není orient nastaven, bere se jako výchozí informace ze vstupního seznamu.
+Velikost výsledné stránky se nezmìní, pokud není uvedeno jinak.
 
 
-\subsubsection{pøíkazy:}
-\begin{tabular}{l p{10 cm}}
-{\tt read}{\it(name)} & pøipojí na konec seznamu  stránky ze souboru {\it name}\footnote{tedy pokud to daný formát umo¾òuje}, {\it name} je øetìzec\\
-{\tt write}{\it(name)}& ulo¾í seznam stránek do souboru {\it name}, {\it name} je øetìzec\\
-{\tt select}{\it \{seznamy\_stránek\}}& vybere stránky dle {\it seznamy\_stránek}, aplikuje  na nì pøíslu¹né pøíkazy, výsledný seznam obsahuje stránky z~výbìru\\
-{\tt apply}{\it \{seznamy\_stránek\}}& aplikuje jednotlivé pøíkazy na {\it seznamy\_stránek}, nezmìnìné stránky zùstanou ve výsledném seznamu\\
-{\tt modulo}{\it(n)\{seznamy\_stránek\} }& pøidá na konec seznamu prázdné stránky, aby délka výsledného seznamu byla násobkem èísla {\it n}, 
-potom jej rozdìlí na $k$ podseznamù délky {\it n}. Na jednotlivé podseznamy je aplikován výbìr stránek.
-Výbìr s~kladným znaménkem se provádí od stránky $n\cdot j$ a se záporným znaménkem se provádí na $l-n\cdot j$, 
-kde $l$ je délka seznamu, $j$ je èíslo zpracovávaného podseznamu, na konci pøíkazu jsou jednotlivé podseznamy spojeny\\
-{\tt new}{\it\{pøíkazy\}}& pøidá prázdnou stránku na konec seznamu a aplikuje na  ní {\it pøíkazy}\\
-{\tt delete}& sma¾e v¹echny stránky v~seznamu\\
-{\tt scale}{\it(paper\_size{\tt |}size)}& zmìní velikost v¹ech stránek v~seznamu, {\it paper\_size} velikost papíru\footnote{a4, letter, \ldots } na kterou se stránka pøetransformuje, {\it size},  reálné èíslo, mìøítko zmìny vùèi pùvodní stránce \\
-{\tt flip}{\it(horizontal{\tt |}h{\tt |}vertical{\tt |}v\}}& zrcadlení stránek v¹ech stránek v~seznamu, {\it horizontal{\tt |}h} vodorovnì, {\it vertical{\tt |}v} svisle. \\
-{\tt number}{\it(start, font\_size, font}& pøidá  na jednotlivé stránky èísla stránek, {\it start}  
+Daksi u¾iteènou operací nu¾e být pøerovnání stránek pro tisk kní¾eèky.
+
+\vspace{5mm}
+\begin{tabular}{lp{10 cm}}
+{\tt book} & pøerovná stránky pro tisk bookletu\\
+{\tt book} nup(2) & nejprve pøerovná stránky pro tisk bookletu, pak umístí dvì stránky na jednu\\
+\end{tabular}
+\vspace{5mm}
+
+Dále se mohou hodit následující operace.
+
+
+\vspace{5mm}
+\begin{tabular}{lp{10 cm}}
+{\tt scaleto(a4)}&zvìt¹ení/zmen¹ení velikosti papíru na a4\\
+{\tt scaleto2(1,2,3,4)}&	zvet¹eni/zmen¹eni stránky na explicitnì zadanou velikost (levý dolní, pravý horní roh)\\
+{\tt paper(a4)}&nastaveni velikosti papíru a a4  (neprovádí se zvet¹eni, zmen¹eni stránky)\\
+{\tt crop(a4)}&oøíznuti stránky na daný formát\\
+{\tt crop(1,2,3,4)}&oøíznuti stránky na daný rozmìr\\
+{\tt merge}&	slouèí v¹echny stránky v seznamu na jednu\\
+{\tt cmarks} &	 pøidá oøezové znaèky na stránku, jsou umístìny podle bboxu\\
+\end{tabular}
+\vspace{5mm}
+
+
+Mezi zajímavé pøíkazy patøí modulo, select a apply.
+Nejprve popi¹me modulo, první parametr n udává poèet stránek ve skupinách, na které se rozdìlí vstupní seznam. Pokud není celkový poèet stránek v~seznamu
+násobkem èísla n, pøidá se na konec seznamu pøíslu¹ný poèet prázdných stránek, aby seznam mìl délku rovnu násobku èísla n. Pokud je nastaven parametr round, tak n je rovno  max(n,round).
+Na ka¾dou skupinu je aplikován výbìr a provedou se pøíslu¹né pøíkazy. Pokud výbìr stránky obsahuje symbol '-' vybírají se stránky, ze skupiny,
+která je zrcadlovì symetrická dle støedu seznamu. Výsledná skupina seznamu je spojena do výstupního.
+\subsubsection*{priklad:}
+Nech» máme seznam '1 2 3 4 5 ' aplikujme na nìj modulo s n rovným 3. Nejprve se seznam doplní na vhodnou delku '1 2 3 4 5 6 ' 
+a rozdìlí se na pøílslu¹ne skupinky '1 2 3' a '4 5 6'. Vybereme {1 -1} '1 6' a '4 3' a výsledek spojíme '1 6 4 3'.
+Pokud parametr half je roven 1, zpracovava se pouze polovina skupinek, pak výsledek pøedchozího prikladu je '1 6'.
+
+\subsubsection*{pøíklady:}
+\vspace{5mm}
+\begin{tabular}{lp{10 cm}}
+ {\tt modulo(2,half=1)\{-1 1 2 -2\}} &	odpovídá operátoru book\\
+{\tt modulo (1)\{-1\}} &obrátí seznam stránek\\
+{\tt modulo(2)\{1 2 rotate(180)\}} &	odpovídá pøíkazu duplex(1), tj. první stránka bez zmìny, druha se rotuje o 180 stupòù\\
+{\tt modulo(16)\{1..16 book\}} & vytvoøení signatury o 16-ti stránkách pro vázání kní¾ek\\
+\end{tabular}
+\vspace{5mm}
+
+Pøíkaz apply provede na  vybraných stránkách zvolené pøíkazy. Pøíkaz select vybere stránky ze seznamu a pøípadné na nì aplikuje pøíkazy.
+
+\vspace{5mm}
+\begin{tabular}{lp{10 cm}}
+{\tt apply\{1 new \}} & za první stránku pøidá prázdnou\\
+{\tt select\{1..10\}}	& vybere prvních deset stránek z dokumentu\\
+\end{tabular}
+\vspace{5mm}
+
+Pokud potøebujeme docílit, aby v¹echny stránky v dokumentu mìly stejnou velikost, mù¾eme pou¾ít pøíkaz norm.
+Mezi jeho argumenty patøí center, výchozí hodnota je centrovaní podle os x a y, none vypne centrovaní, x centrovaní podle osy x, y centrovaní podle osy y a 
+xy centrovaní podle obou os.
+
+Nìkdy mají stránky zbyteènì velké okraje. V~tomto pøípadì je mo¾né nechat GhostScript pøepoèítat jejich okraje.
+Tato operace se provádí pomocí pøíkazu bbox. Rozmìry výsledného okraje je maximum z~okrajù jednotlivých stránek.
+
+\vspace{5mm}
+\begin{tabular}{lp{10 cm}}
+{\tt bbox scaleto(a4)} & pøepoèítání okrajù a pøizpùsobení velikosti stránek na papír a4.\\
+{\tt bbox norm(center=y) scalet(a4)} & pøepoèítání okrajù a pøizpùsobení velikosti stránek na papír a4, vhodné pro stránky se zrcadlovì orientovanými okraji. \\
+\end{tabular}
+\vspace{5mm}
+
+V~jistých pøípadech se mu¾e hodit oèíslovat stránky, pro tento úkon je urèen pøíkaz number.\\
+
+\vspace{5mm}
+\begin{tabular}{lp{10 cm}}
+{\tt numer} &	oèísluje v¹echny stránky, zaèíná se èíslem 1 a je umístìno dolu na støed stránky\\
+{\tt number(10,10)} & obdobnì jako pøedchozí pøípad, akorát je èíslo umístìno na pozici 10, 10 od levého dolního rohu.\\
+{\tt number(start=2)} & bude se èíslovat od 2\\
+{\tt number(text="-\%d-")} & èíslovat se bude od 1, ale výstup bude vypadat následovnì "-èíslo\_stránky-". ("\%d" øíká, kde bude èíslo stránky)
+\end{tabular}
+\vspace{5mm}\\
+
+Dal¹í parametry jsou: size (velikost písma), font (název øezu písma, font musí být obsa¾en v pøíslu¹ném formátu).
+
+
+\subsubsection{Seznam a struèný popis v¹ech pøíkazù}
+{\small {\small {\small
+\begin{tabular}{l |p{10 cm}}
+{\tt apply\{page\_ranges\}}& aplikuje jednotlivé pøíkazy na výbìr stránek\\
+{\tt bbox}&pøepoèítá na ka¾dé stránce bounding box za pomoci GhostScriptu\\
+{\tt book}&	pøerovná stránky do kní¾eèky\\
+{\tt cmarks(by\_bbox)}&pøidá na stránky oøezové znaèky, pokud je by\_box roven 0 pøidávají dle rozmìru stránky, v opaèném pøípadì dle bounding boxu\\
+{\tt crop(paper)}& oøízne stránku dle zadaných rozmìrù papíru\\
+{\tt crop2(lx, ly, hx, hy)}&oøízne stránku dle zadaných rozmìrù\\
+{\tt del}& sma¾e v¹echny stránky v~seznamu\\
+{\tt duplex(long-edge)}&	pootáèí stránky v~seznamu pro duplexní tisk, parametr long-edge øíká podle jaké strany papíru se bude otáèet (1 del¹í, 0 krat¹í)\\
+{\tt flip(mode)}& zrcadlení v¹ech stránek v~seznamu, {\it horizontal{\tt |}h} vodorovnì, {\it vertical{\tt |}v} svisle. \\
+{\tt line(b\_x, b\_y, e\_x, e\_y, size)}& nakreslí èáru ¹íøky {\it size} mezi body {\it b\_x, b\_y} a { \it e\_x, e\_y} \\
+{\tt merge}& spojí stránky v~seznamu do jedné (polo¾í je pøes sebe)\\
+{\tt modulo(pages, half, round)\{page\_ranges\}}&\\
+{\tt move(x, y)}& posune obsah stránky o~{\it x, y}\\
+{\tt new\{pøíkazy\}}& vytvoøí a pøidá prázdnou stránku na konec seznamu a aplikuje na  ní {\it pøíkazy}\\
+{\tt norm(center, scale, l\_bbox, g\_bbox)} & normování velikosti stránek v~seznamu\\
+{\tt number(start, font\_size, font)}& pøidá  na jednotlivé stránky èísla stránek, {\it start}  
 poèátek èíslování, {\it font}  jméno fontu {\it øetìzec}, text, který se má na stránku vykreslit, výchozí \uv{\%d} èíslo stránky,  {\it font\_size} velikost písma, v¹echny parametry jsou nepovinné\\
-{\tt crop}{\it(lx, ly, hx, hy)}& oøízne stránku dle zadaných rozmìrù a nastaví bounding box\\
-{\tt paper}{\it(paper\_size)}& nastaví velikost papíru stránkám v~seznamu\\
-{\tt orient}{\it(landscape{\tt |}portrait)}&  nastaví orientaci textu na stránkách v~seznamu\\
-{\tt nup}{\it(x, y, dx, dy, orientation, frames)}& pøeskládá $x\cdot y$ stránek na jednu, {\it x} poèet stránek ve vodorovném smìru,
+{\tt nup(x, y, dx, dy, orientation, frames)}& pøeskládá $x\cdot y$ stránek na jednu, {\it x} poèet stránek ve vodorovném smìru,
 {\it y} poèet stránek ve svislém smìru, {\it dx} mezera mezi stránkami ve vodorovném smìru, {\it dy} mezera mezi stránkami ve svislém smìru, {\it orientation} zpùsob rovnání stránek,
 {\it frames} stránky budou orámovány\\
-{\tt merge}& spojí stránky v~seznamu do jedné (polo¾í je pøes sebe)\\
-{\tt text}{\it (x, y, text, size, font)}& nakreslí text na v¹echny stránky v~seznamu,{ \it  x,y} umístìní na stránce, { \it size} velikost fontu, { \it font} jméno fontu, parametry { \it size} a { \it font} jsou nepovinné\\
-{\tt line}{\it (b\_x,b\_y,e\_x,e\_y,size)}& nakreslí èáru ¹íøky {\it size} mezi body {\it b\_x,b\_y} a { \it e\_x,e\_y} \\
-{\tt rotate}{\it (angle)}& otoèí stránky o~úhel {\it angle} ve stupních\\
-{\tt move}{\it( x,y)}& posune obsah stránky o~{\it x,y}\\
+{\tt orient(landscape{\tt |}portrait)}&  nastaví orientaci textu na stránkách v~seznamu\\
+{\tt paper(paper\_size)}& nastaví velikost papíru stránkám v~seznamu, neprovádí se ¾ádná zmìny mìøítka\\
+{\tt paper2}(x, y)& nastavení explicitních rozmìrù papíru\\
+{\tt read(name)} & pøipojí na konec seznamu  stránky ze souboru {\it name}, {\it name} je øetìzec\\
+{\tt rotate(angle)}& otoèí stránky o~úhel {\it angle} ve stupních\\
+{\tt scale(scale)} &	zmìní velikost stránek v zadaném mìøítku <1 zmen¹ení, >1 zvìt¹ení\\
+{\tt scaleto(paper, top, right, bottom, left)} &zmìní velikost v¹ech stránek v~seznamu, {\it paper\_size} velikost papíru na kterou se stránka pøetransformuje, okraje jsou explicitnì nastaveny na pùl palce\\
+{\tt scaleto2(x, y, top, right, bottom, left)} &zmìna velikosti stránky na explicitní velikost papíru, provádí se zmìna mìøítka\\
+{\tt select\{page\_ranges\}}& vybere stránky dle {\it seznamy\_stránek}, aplikuje  na nì pøíslu¹né pøíkazy, výsledný seznam obsahuje stránky z~výbìru\\
+{\tt text(x, y, text, size, font)}& nakreslí text na v¹echny stránky v~seznamu,{ \it  x,y} umístìní na stránce, { \it size} velikost fontu, { \it font} jméno fontu, parametry { \it size} a { \it font} jsou nepovinné\\
+{\tt write(name)}& ulo¾í seznam stránek do souboru {\it name}, {\it name} je øetìzec \\
 \end{tabular}
+}}}
+
+\subsubsection*{Omezení}
+Soubory ve formátu PostScript nelze spojovat dohromady a jsou u nich vy¾adovány DSC komentáøe.
+V pøípadì PDF formátu nelze pracovat s kryptovanými PDF. Dále neumí program pracovat s PDF,
+která vyu¾ívají nìkterá roz¹íøení z verze 1.5 a novìj¹ích.
+Mezi nì napøíklad patøí ObjectStreams a Cross-Reference Streams.
+
+\subsubsection*{Instalace}
+\begin{enumerate} 
+\item stáhnout ze svn zdrojové kódy\\
+{\tt "svn co https://pspdftool.svn.sourceforge.net/svnroot/pspdftool pspdftool"}\\
+nebo pou¾ít balíèek se zdrojovými kódy a rozbalit jej\\
+{\tt "tar xvzf pspdftool"}
+\item pøepnout se do adresáøe se zdrojovými kódy\\
+{\tt  "cd pdpdftool/trunk"}
+\item konfigurace pøeklad a instalace\\
+{\tt "./configure \&\& make \&\& make install"}
+\end{enumerate} 
+
+
+Program funguje pod Linuxem a Mac OS X. Mìl by fungovat i na jiných rozumných UNIXech. Je závislý na zlibu a GhostScriptu.
+
+
 
 \section{Zobecnìní dokumentu}
 Dokument urèený pro tisk obsahuje informace o~stránkách a jejich vlastnostech. Pro reprezentaci stránek jsem zvolil spojový seznam. Jeho prvky odpovídají jednotlivým stránkám v~dokumentu.
@@ -487,7 +622,7 @@ Pro tento pøípad jsem implementoval formát {\it dummydoc}, jeho¾ interface je za
 Tato èást knihovny obsahuje èásti nezávislé na konkrétním formátu. Patøí sem interface pro práci a registraci konkrétních formátù, sada funkcí pro práci s~transformaèní maticí, funkce pro prací se seznamem stránek a dal¹í pomocné funkce. 
 Do této èásti mù¾eme øadit pøíkazový interpret, který pøíkazy popí¹i pozdìji.
 
-\section{Implementace konkrétního formátu}
+\section{Implementace konkrétních formátù}
 Pro ovìøení návrhu knihovny jsem implementoval následující formáty PostScript a PDF. Tato implementace je také ukázkou, jak by se mìly pøidávat dal¹í formáty.
 
 Ka¾dý formát musí obsahovat funkci, která je pøedána funkci pro pøidání nového formátu do pspdftoolu. Pøi registraci formátu je této  funkci pøedána struktura definující interface mezi závislou a nezávislou  èástí na formátu.
@@ -500,13 +635,10 @@ urèit, kde zaèíná a konèí pøíslu¹ná stránka dokumentu. PostScriptové soubory, ja
 Nástroj PSUtils umo¾òuje spojovat pouze soubory se stejným prologem. Moje implementace pro PS formát neumo¾òuje spojovat ¾ádné  dokumenty.
 
 
-Funkce pro naètení dokumentu funguje následnovnì, vstupní soubor se ète po øádcích a zpracovávají se øádky s~DSC komentáøem. Za pomoci tìchto komentáøù lze
-soubor rozdìlit na následující èásti: hlavièku, procdef, docsetup, jednotlivé stránky a trailer. Ka¾dá èást ma nìjaký význam, viz kapitola o DSC komentaøích.
+Funkce pro naètení dokumentu funguje následovnì, vstupní soubor se ète po øádcích a zpracovávají se øádky s~DSC komentáøem. Za pomoci tìchto komentáøù lze
+soubor rozdìlit na následující èásti: hlavièku, procdef, docsetup, jednotlivé stránky a trailer. Ka¾dá èást má nìjaký význam, viz kapitola o DSC komentáøích.
 
-U~stránky si pamatuji, kde se nachází její kód ve zdrojovém souboru.
-
-
-Proto¾e PS soubor mù¾e být velmi veliký (stovky MB), není rozumné jej naèíst celý do pamìti.
+U~stránky si pamatuji, kde se nachází její kód ve zdrojovém souboru, proto¾e PS soubor mù¾e být velmi veliký (stovky MB), není rozumné jej naèíst celý do pamìti.
 
 Do sekce procdef se pøidají vlastní definice a redefinice PostScriptových operátorù potøebných pro práci knihovny.
 Napøíklad zmìna operátoru {\it showpage} na prázdný a místo nìj definice nového.
@@ -522,48 +654,48 @@ U~PDF dokumentu je mo¾né implementovat v¹echny operace. V~dokumentu se pøeètou v
 strom stránek (dle specifikace PDF), odstraní se nepou¾ité objekty (prohledáním do hloubky od Catalog objektu).  Do souboru se zapí¹í v¹echny pou¾ité objekty a na konec se pøidá trailer a tabulka referencí.
 
 Operace typu transformace, spojení dvou stránek do jedné, kreslení èar a psaní textu se týkají streamu pøíslu¹né stránky. Proto¾e jsme si vytvoøili z~pùvodních stránek XObjecty a nové stránky, které se na nì odkazují, mají stream v~nezakódované podobì. Není tedy potøeba implementovat jednotlivé filtry pro práci se streamem. Spojení dvou stránek odpovídá spojení dvou Content Streamù za sebe. Kreslení a transformace  odpovídá pøidáním pøíslu¹ných operátorù do Content Streamu stránky.
-Druhou výhodou daného øe¹ení je jednoduché slouèení resources stranky.
+Druhou výhodou daného øe¹ení je jednoduché slouèení resources stránky.
 
-Problém nastane, pokud chceme zkonvetrovat stránku, její¾ popis je rozdìlen do více streamù. Pøímoèaré øe¹ení by bylo zkonvertovat ka¾dou èást na XObject.
-Vzhledem k tomu, ¾e mohou být streamy mezi sebou závisle, nemusi být tento pøevod korektní ve v¹ech pøípadech. Tento problém lze vyøe¹it pouze
+Problém nastane, pokud chceme zkonvertovat stránku, její¾ popis je rozdìlen do více streamù. Pøímoèaré øe¹ení by bylo zkonvertovat ka¾dou èást na XObject.
+Vzhledem k tomu, ¾e mohou být streamy mezi sebou závisle, nemusí být tento pøevod korektní ve v¹ech pøípadech. Tento problém lze vyøe¹it pouze
 slouèením více streamù do jednoho. Pro tento úkon je potøeba stream dekryptovat. Proto jsem doplnil do programu funkce pro dekompresi streamu v LZW a Dedlate.
 Pokud nebude k~dispozici filtr pro práci se streamem, program vygeneruje varovaní a pou¾ije vý¹e citovaný nekorektní postup. Filtry jsou implementovány v~souboru {\it pdf\_filters}.c.
 
 Pro operaci spojení dvou dokumentù je potøeba v~jednom z~dokumentù pøeèíslovat objekty tak, aby nekolidovaly s~druhým dokumentem. V~pspdftoolu je pou¾ito následující
-øe¹ení, v~pøipojovaném dokumentu se pøiète ke ka¾demu èíslu objektu èíslo udávající poèet objektù v~druhém souboru. 
+øe¹ení, v~pøipojovaném dokumentu se pøiète ke ka¾dému èíslu objektu èíslo udávající poèet objektù v~druhém souboru. 
 
-Implementace formatu plnì podporuje PDF do verze 1.4. Novìj¹í PDF obsahují napøíklad tato roz¹íøení: ObjectStreams a Cross-Reference Streams. 
+Implementace formátu plnì podporuje PDF do verze 1.4. Novìj¹í PDF obsahují napøíklad tato roz¹íøení: ObjectStreams a Cross-Reference Streams. 
 Proto¾e tato roz¹íøení nejsou èasto vyu¾ívána, nepova¾oval jsem za dùle¾ité, aby s~nimi umìl nástroj pracovat.
 K~jejich implementaci by bylo vhodné umìt pracovat se v¹emi filtry, které jsou definovány ve specifikaci PDF.
 	
 \section{Interpret pøíkazù}
 V~souèasné dobì je k~dané knihovnì napsán jediný u¾ivatelský agent, jednoduchý interpret pøíkazù.
-Jeho implementace se nachazí v~souboru {\tt cmdexec.c}. Tokenizer {\it cmd\_get\_token} rozkládá vstupní soubor na tokeny. 
-Tokenizér je volán funkcí {\it cmd\_make\_tree}, jednoduchý LR parser, který z~tokenù vytvoøí derivaèní strom.
-Na výsledný derivaèní strom je zavolána funkce   {\it cmd\_exec\_tree}, která vykoná zadané pøikazy.
-Funkce {\it cmd\_exec} provede zadané pøikazy na seznam stránek.
-Pøikazy, které interpret obsahuje, jsou definovány ve struktuøe {\it cmd\_commands}.
-První polo¾kou je název pøíkazu, druhou jeho nápvìda,  tøetí ukazatel na obslu¾nou funkci a poslední argumenty pøíkazu.
-Ka¾dé obslu¾né funkci je pøedán seznam stránek, pole agrumentù funkce a selektor stránek \footnote{ viz syntaxe pøíkazu}.
+Jeho implementace se nachází v~souboru {\tt cmdexec.c}. Tokenizér {\it cmd\_get\_token} rozkládá vstupní soubor na tokeny. 
+Tokenizér je volán funkcí {\it cmd\_make\_tree}, jednoduchý LR1 parser, který z~tokenù vytvoøí derivaèní strom.
+Na výsledný derivaèní strom je zavolána funkce   {\it cmd\_exec\_tree}, která vykoná zadané pøíkazy.
+Funkce {\it cmd\_exec} provede zadané Pøíkazy na seznam stránek.
+Pøíkazy, které interpret obsahuje, jsou definovány ve struktuøe {\it cmd\_commands}.
+První polo¾kou je název pøíkazu, druhou jeho nápovìda,  tøetí ukazatel na obslu¾nou funkci a poslední argumenty pøíkazu.
+Ka¾dé obslu¾né funkci je pøedán seznam stránek, pole argumentù funkce a selektor stránek \footnote{ viz syntaxe pøíkazu}.
 
 \chapter{Závìr}
 V~této práci jsem prozkoumal mo¾nosti pøedtiskových úprav dokumentu. 
 Vytvoøil jsem  vlastní nástroj, který je komplexnìj¹í ne¾ øe¹ení  souèasná.
-Mezi jeho hlavní výhody patøí: stejné rozrharní pro více formátu, mo¾nost
+Mezi jeho hlavní výhody patøí: stejné rozhraní pro více formátu, mo¾nost
 ho roz¹íøit o~dal¹í formáty, pøípadnì konverze jednoho formátu na druhý u¾itím
 externího programu.
 
 Na tisku by se dalo zkoumat mnohé, napøíklad: techniky tisku,
 barevné kalibrace zaøízení, nebo nástroje pro tvorbu dokumentù.
 
-Mnou vytvoøený nástroj pspdftool není primárnì urèen k~profesionálnímu pou¾ití v~tiskárnách.
+Mnou vytvoøený nástroj pspdftool není primárnì urèen k~profesionálnímu pou¾ití v~tiskár\-nách.
 Neumí napøíklad pracovat s barvami, nebo pøidat soutiskové znaèky. 
-Dle mého názoru absence tìchto oparací není omezující pøi tisku èernobílých dokumentù.
+Dle mého názoru absence tìchto operací není omezující pøi tisku èernobílých dokumentù.
 Zpravidla se v~profesionálním prostøedí se vytváøí dokument pro tisk pøesnì 
 na míru, tj. není na nìj potøeba aplikovat pøedtiskové úpravy.
 
 Vhodné by bylo doplnit k~nástroji grafické rozhraní pro jeho intuitivnìj¹í ovládání.
-Pøíkazový interpret by se mohl roz¹íøit o defenici u¾ivatelských maker.
+Pøíkazový interpret by se mohl roz¹íøit o definici u¾ivatelských maker.
 Èást pracující s~PDF by mohla být roz¹íøena o~dal¹í filtry a o dal¹í roz¹íøení
 novìj¹ích verzí PDF. Do èásti implementující práci s PostScriptem by bylo vhodné
 doplnit operace, které by napøíklad tiskárnì øekly, jestli má pou¾ívat duplex.
@@ -575,6 +707,8 @@ a na základì informací z PPD zapnout, nebo vypnout urèitou pøedvolbu tisku.
 %%% Literatura se øadí abecednì. Úvádí se pouze literatura, na kterou se v~textu odkazuje.
 %%% Pøi odkazu na knihu se v¾dy uvádìjí èísla stránek.
 
+
+
 \begin{thebibliography}{99}
 \addcontentsline{toc}{chapter}{Literatura}
  \bibitem{postscript}Adobe Systems, Inc.,{\em PostScript Language Reference Manual}, 3rd edition, Addison-Wesley Professional,1999.
@@ -583,8 +717,13 @@ a na základì informací z PPD zapnout, nebo vypnout urèitou pøedvolbu tisku.
 \bibitem{ghostscript} http://www.ghostscript.com/awki
 \bibitem{psutils} http://www.tardis.ed.ac.uk/\textasciitilde{}ajcd/psutils/
 \bibitem{pdftk} http://www.accesspdf.com/pdftk/index.html
-
 \end{thebibliography}
-\appendix
-	Obsah pøílo¾eného CD-ROM
+
+\appendix \chapter{Obsah pøilo¾eného CD-ROM}
+Na pøilo¾eném CD-ROMu se nachází v~adresáøi {\it bc\_text} zdrojové kódy a text bakaláøské práce. V~adresáøi {\it src} se nachází zdrojový kód programu.
+
 \end{document}
+
+
+
+
