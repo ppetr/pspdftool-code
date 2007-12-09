@@ -23,7 +23,7 @@ enum {
 };
 
 char            pusage[][LLEN] = {
-	"Usage: pdftool [<options>] <commands> <infile> ... <outfile>",
+	"Usage: pspdftool [<options>] -f<command>|<commands> <infile> ... <outfile>",
 	"  -h --help	Display this help screen",
 	"  -f --file    <command file>",
 /*	"  -q --quiet   Supress screen output",
@@ -51,7 +51,7 @@ static void
 print_help(FILE * stream, int exit_code)
 {
 	size_t          i;
-	fprintf(stream, "pdftool %d.%02d\n", RELEASE, PATCHLEVEL);
+	fprintf(stream, "pspdftool %d.%02d\n", RELEASE, PATCHLEVEL);
 	for (i = 0; i < sizeof(pusage) / LLEN; ++i){
 		fprintf(stream, "%s\n", pusage[i]);
 	}
