@@ -140,6 +140,8 @@ static char * DSClib[]={
 			0
 };
 
+/*<< /Duplex true >> setpagedevice %duplex delsi hrana
+* << /Duplex true /Tumble true >> setpagedevice %duplex kratsi strana*/
 /**definice prolugu, ktery se pridava na zacatek kazdeho upravovaneho dokumentu*/
 char * MyProlog[]={
 		 	"%%BeginProcSet: PSTool",

@@ -1550,7 +1550,7 @@ void cmd_print_info(FILE *f){
 							fprintf(f,"%.2f pt",cmd_commands[i].params[j].real_number);
 						}
 						else{
-							fprintf(f,"<mesure>");
+							fprintf(f,"<measure>");
 						}
 						break;
 					default:
