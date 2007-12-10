@@ -154,7 +154,7 @@ tvorbu tìchto dokumentù, ani nezkoumám rùzné tiskové metody. Zabývám se pouze do
 
 Práce je rozdìlena do nìkolika èástí. První èást vysvìtluje základní pojmy, které se týkají dokumentù a pøedtiskových úprav.
 Druhá èást popisuje jak fungují formáty PostScript a PDF s~ohledem na jejich pøedtiskové úpravy.
-Tøetí èásti je popis nìkterých souèasných nástrojù pro pøedtiskové úpravy dokumentù.
+V~tøetí èásti je popis nìkterých souèasných nástrojù pro pøedtiskové úpravy dokumentù.
 Poslední èást se zabývá mnou vytvoøeným nástrojem pspdftool, který umí provádìt rùzné pøedtiskové úpravy ve formátech PostScript a PDF.
 Pøíkladem tìchto úprav mù¾e být: zmìna rozmìrù stránky, selekce a pøeuspoøádání stránek nebo umístìní více stránek na jeden arch papíru.
 
@@ -189,7 +189,7 @@ U~bitmapových formátù èasto chybí údaj na jaký rozmìr papíru a jak se konkrétnì 
 Jeho dal¹ím nedostatkem je pøípadná závislost na konkrétním prostøedí. Napøíklad pro korektní zobrazení dokumentu z~OpenOffice potøebujeme
 mít nainstalované konkrétní øezy písma.
 
-Formáty pro tisk, na rozdíl od formátù editorových, nejsou urèeny k~dal¹ímu editováni, av¹ak nìkteré operace lze s~nimi také, jak uká¾eme dále, provádìt.
+Formáty pro tisk, na rozdíl od formátù editorových, nejsou urèeny k~dal¹í editaci, av¹ak nìkteré operace lze s~nimi také, jak uká¾eme dále, provádìt.
 Tisknutelným formátem mù¾e být jazyk urèený pøímo pro tiskárnu (PostScript, PCL, GDI, HPGL), nebo formát, z~kterého je mo¾no pøímo tisknout (PDF).
 Pøevod dokumentu na jazyk pro tiskárnu mù¾e mít jistá omezení, napøíklad  závislost na konkrétním typu a rozli¹ení tiskárny. 
 Dále se budu zabývat formáty PostScript a PDF.
@@ -219,7 +219,7 @@ Pro jeho zobrazení mù¾eme pou¾ít GhostScript \cite{ghostscript}.
 
 PostScript je turingovsky úplný programovací jazyk s~prefixovou notací.
 Je podobný svou syntaxí jazyku Forth, ale na rozdíl od nìj je specializovaný pro popis grafického výstupu na stránku.
-Mezi základní elementy jazyka PostScript  patøí: oblouk, B\`ezeriova køivka a úseèka. Pro písmo existují speciální pøíkazy, které vykreslí písmena z~køivek. Tyto elementy nejsou zavislé na rozli¹ení výstupního zaøizení.
+Mezi základní elementy jazyka PostScript  patøí: oblouk, B\`ezierova køivka a úseèka. Pro písmo existují speciální pøíkazy, které vykreslí písmena z~køivek. Tyto elementy nejsou závislé na rozli¹ení výstupního zaøízení.
 
 PostScriptový interpret vyu¾ívá nìkolik zásobníkù. Mezi nejdùle¾itìj¹í patøí zásobník na operandy pøíkazù a zásobník pro ulo¾ení slovníkù.
 Slovník je kolekce párù klíè a hodnota. Pøidáním nového záznamu do slovníku lze definovat pojmenované konstanty nebo nové pøíkazy,
@@ -322,7 +322,7 @@ Slovník streamu musí obsahovat povinný atribut {\it Length}, který udává délku b
 Uvnitø streamu nemù¾e být odkaz na ostatní objekty v~dokumentu.
 
 V~PDF je definován nepøímý objekt (indirect object). Nepøímým objektem mù¾e být libovolný objekt. Pro jeho jednoznaènou identifikaci jsou pou¾ita dvì èísla: první urèuje objekt,
-druhé urèuje jeho reverzi, novìj¹í verze objektu má vy¹¹í èíslo.
+druhé urèuje jeho revizi, novìj¹í verze objektu má vy¹¹í èíslo.
 Syntakticky nepøímý objekt vypadá následovnì: {\it èíslo revize popis\_samotného\_objektu endobj }.
 Na tento objekt se lze odkázat pomocí následující syntaxe, {\it èíslo\_objektu revize R}. 
 
@@ -471,7 +471,7 @@ K tomu se hodí  pøíkaz nup.
 
 Dal¹í u¾iteèné parametry pøíkazu nup  jsou: frame (orámovaní), kde èíslo udává ¹íøku èáry, 
 center (výchozí on výsledek je centrován, off nic se necentruje, final centruje se a¾ výsledná stránka),
-dx,dy (minimalni ¹íøka mezi stránkami), orient (postup kladení stránek na stránku, portrait zleva doprava, z hora dolù, landscape zprava doleva z hora dolù).
+dx, dy (minimalni ¹íøka mezi stránkami), orient (postup kladení stránek na stránku, portrait zleva doprava, z hora dolù, landscape zprava doleva z hora dolù).
 Pokud není orient nastaven, bere se jako výchozí informace ze vstupního seznamu.
 Velikost výsledné stránky se nezmìní, pokud není explicitnì uvedena.
 
