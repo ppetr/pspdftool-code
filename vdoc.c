@@ -3,13 +3,18 @@
 #include "vdoc.h"
 
 
+int pages_transform(page_list_head * p_doc, transform_matrix * matrix){
+	page_list * page;
+	for (page=page_next(page_begin(p_doc));page!=page_end(p_doc);page=page_next(page)){
+		doc_page_transform(page,matrix);
+	}
+	return 0;
+}
+
 int pages_scale(page_list_head * p_doc, double scale){
 	transform_matrix  scale_matrix = {{1,0,0},{0,1,0},{0,0,1}};
-	page_list * page;
 	transform_matrix_scale(&scale_matrix,scale);
-	for (page=page_next(page_begin(p_doc));page!=page_end(p_doc);page=page_next(page)){
-		doc_page_transform(page,&scale_matrix);
-	}
+	pages_transform(p_doc,&scale_matrix);
 	return 0;
 }
 
@@ -81,7 +86,6 @@ int pages_scaleto(page_list_head * p_doc, dimensions * _paper, double top, doubl
 
 int pages_rotate(page_list_head * p_doc, int angle){	
 	transform_matrix  matrix = {{1,0,0},{0,1,0},{0,0,1}};
-	page_list * page;
 	int x = p_doc->doc->paper.right.x;
 	int y = p_doc->doc->paper.right.y;
 	update_global_dimensions(p_doc);
@@ -97,11 +101,7 @@ int pages_rotate(page_list_head * p_doc, int angle){
 			break;
 	}
 	transform_matrix_rotate(&matrix,angle);
-	for (page=page_next(page_begin(p_doc));page!=page_end(p_doc);page=page_next(page)){
-		/*printf("<>%d %d %d %d\n",page->page->bbox.left.x,page->page->bbox.left.y,page->page->bbox.right.x,page->page->bbox.right.y);*/
-		/*printf("<>%d %d %d %d\n",page->page->paper.left.x,page->page->paper.left.y,page->page->paper.right.x,page->page->paper.right.y);*/
-		doc_page_transform(page,&matrix);
-	}
+	pages_transform(p_doc,&matrix);
 	update_global_dimensions(p_doc);
 		/*printf("<d>%d %d %d %d\n",p_doc->doc->bbox.left.x,p_doc->doc->bbox.left.y,p_doc->doc->bbox.right.x,p_doc->doc->bbox.right.y);*/
 	return 0;
@@ -145,7 +145,7 @@ int pages_number(page_list_head * p_doc,int x, int y, int start,char * text, cha
 		if (p1==NULL || p1!=p2){
 			return -1;
 		}
-		p2=strstr(p1,"%");
+		p2=strstr(p1 + 1,"%");
 		if (p2!=NULL){
 			return -1;
 		}
@@ -168,7 +168,6 @@ int pages_number(page_list_head * p_doc,int x, int y, int start,char * text, cha
 
 int pages_flip(page_list_head * p_doc, int mode1, int mode2){
 	transform_matrix  matrix = {{1,0,0},{0,1,0},{0,0,1}};
-	page_list * page;
 	switch(mode1){
 		case DOC_O_LANDSCAPE:
 			matrix[2][1]+=p_doc->doc->paper.right.y;
@@ -182,9 +181,7 @@ int pages_flip(page_list_head * p_doc, int mode1, int mode2){
 			assert(-1);
 			return -1;
 	}
-	for (page=page_next(page_begin(p_doc));page!=page_end(p_doc);page=page_next(page)){
-		doc_page_transform(page,&matrix);
-	}
+	pages_transform(p_doc,&matrix);
 	return 0;
 }
 

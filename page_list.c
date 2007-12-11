@@ -171,7 +171,13 @@ page_list * page_num_to_ptn(page_list_head * plist, int number){
 	assert(is_page_list_head(plist));
 	
 	number=(number<0)?(plist->doc->pages_count+1+number):number;
+
+	if (number == pages_count(plist) + 1){
+		return page_end(plist);
+	}
+
 	if (number<0 || number>pages_count(plist)){
+		printf("%d\n",number);
 		assert(0);
 		return NULL;
 	}

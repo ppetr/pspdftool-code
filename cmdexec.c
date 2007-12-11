@@ -1,3 +1,8 @@
+/**\file cmdexec.c
+ * \brief Prikazovy interpret pro knihovnu.
+ */
+
+
 #define _GNU_SOURCE
 #include <ctype.h>
 #include <stdlib.h>
@@ -182,6 +187,7 @@ static int cmd_move(page_list_head * p_doc, param params[], cmd_page_list_head *
 static int cmd_cmarks(page_list_head * p_doc, param params[], cmd_page_list_head * pages);
 static int cmd_norm(page_list_head * p_doc, param params[], cmd_page_list_head * pages);
 static int cmd_duplex(page_list_head * p_doc, param params[], cmd_page_list_head * pages);
+static int cmd_matrix(page_list_head * p_doc, param params[], cmd_page_list_head * pages);
 
 static param  cmd_read_params[] = {{"name",CMD_TOK_STR,CMD_TOK_UNKNOWN,0,0,NULL}};
 static param  cmd_write_params[] = {{"name",CMD_TOK_STR,CMD_TOK_UNKNOWN,0,0,NULL}};
@@ -252,6 +258,12 @@ static param cmd_norm_params[]   = {{"center",CMD_TOK_ID,CMD_TOK_ID,0,0,NULL},
 				    {"scale",CMD_TOK_INT,CMD_TOK_INT,1,0,NULL},
 				    {"l_bbox",CMD_TOK_INT,CMD_TOK_INT,1,0,NULL},
 				    {"g_bbox",CMD_TOK_INT,CMD_TOK_INT,1,0,NULL}};
+static param cmd_matrix_params[]   = {{"a",CMD_TOK_REAL,CMD_TOK_UNKNOWN,0,0,NULL},
+				      {"b",CMD_TOK_REAL,CMD_TOK_UNKNOWN,0,0,NULL},
+				      {"c",CMD_TOK_REAL,CMD_TOK_UNKNOWN,0,0,NULL},
+				      {"d",CMD_TOK_REAL,CMD_TOK_UNKNOWN,0,0,NULL},
+				      {"e",CMD_TOK_REAL,CMD_TOK_UNKNOWN,0,0,NULL},
+				      {"f",CMD_TOK_REAL,CMD_TOK_UNKNOWN,0,0,NULL}};
 
 #define fill_params(p) p,sizeof(p)/sizeof(param)
 /**definice prikazu*/
@@ -266,6 +278,7 @@ static cmd_entry cmd_commands[]={
 	{"duplex","",cmd_duplex,fill_params(cmd_duplex_params),0},
 	{"flip","horizontal | vertical",cmd_flip,fill_params(cmd_flip_params),0},
 	{"line","draw line to page",cmd_line,fill_params(cmd_line_params),0},
+	{"matrix","transform by matrix",cmd_matrix,fill_params(cmd_matrix_params),0},
 	{"merge","merge list to one page",cmd_merge,NULL,0},
 	{"modulo", "",cmd_modulo,fill_params(cmd_modulo_params),1},
 	{"move","",cmd_move,fill_params(cmd_move_params),0},
@@ -333,8 +346,8 @@ static int cmd_sort_range(cmd_page_list_head * sorted,cmd_page_list_head * unsor
 		}
 		memcpy(pom,it1,sizeof(cmd_page_list));
 		if (pom->negativ_range){
-			pom->range[0]=pages_count-pom->range[0];
-			pom->range[1]=pages_count-pom->range[1];
+			pom->range[0]=pages_count-pom->range[0] + 1;
+			pom->range[1]=pages_count-pom->range[1] + 1;
 			tmp=pom->range[0];
 			pom->range[0]=pom->range[1];
 			pom->range[1]=tmp;
@@ -1485,7 +1498,7 @@ static int cmd_move(page_list_head * p_doc, param params[], cmd_page_list_head *
 static int cmd_duplex(page_list_head * p_doc, param params[], cmd_page_list_head * pages){
 	char cmds[] = " modulo(2,0){ 1 2 rotate(180) }"; 
 	MYFILE * f;
-/*TODO: add api to vdco for working with duplex*/
+/*TODO: add api to vdoc for working with duplex*/
 	if (params[0].int_number){
 		f = stropen(cmds);
 		assert(cmd_exec(p_doc, f)==0);
@@ -1493,6 +1506,20 @@ static int cmd_duplex(page_list_head * p_doc, param params[], cmd_page_list_head
 	}
 	return 0;
 
+}
+
+static int cmd_matrix(page_list_head * p_doc, param params[], cmd_page_list_head * pages){
+	transform_matrix matrix;
+	matrix[0][0] = params[0].real_number;
+	matrix[0][1] = params[1].real_number;
+	matrix[0][2] = 0;
+	matrix[1][0] = params[2].real_number;
+	matrix[1][1] = params[3].real_number;
+	matrix[1][2] = 0;
+	matrix[2][0] = params[4].real_number;
+	matrix[2][1] = params[5].real_number;
+	matrix[2][2] = 1;
+	return pages_transform(p_doc, &matrix);
 }
 void cmd_print_info(FILE *f){
 	int i=0;
