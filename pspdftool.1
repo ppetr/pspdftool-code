@@ -8,7 +8,7 @@ pspdftool -  tool for prepress preparation of PDF and PostScript documents
 .B \-f\fIfile\fR name
 ] [
 .B \-h\fIhelp\fR
-] 
+]
 [
 .I commands
 ]
@@ -45,16 +45,16 @@ follow the syntax:
 .TP
 page selection
 .TP
-.I number 
+.I number
 page form begin of the list
 .TP
-.I -number 
+.I -number
 page from end of the list
 .TP
-.I number..number 
+.I number..number
 page range from begin of the list
 .TP
-.I -number..number 
+.I -number..number
 page range from end of the list
 .RE
 .sp
@@ -62,120 +62,169 @@ page range from end of the list
 
 list of supported commands
 
-commands for working with documents:
+Commands for working with documents:
 
 .RS
 .TP 12
-.B read 
+.B read
 .I (name=<str>)
 
 append file at the end of list
 .TP
-.B write 
+.B write
 .I (name=<str>)
 
 save list to file
 
-commands for working with pages selections:
-
-.TP
-.B modulo 
-.I (pages=<int>, half=-1, round=-1){page_ranges}
+.RE
+Commands for working with pages selections:
+.RS
+.TP 12
+.B modulo
+.I (pages, half, round){page_ranges}
 .TP
 .B book
 .TP
-.B select
-.I{page_ranges}
+.B select{page_ranges}
 .TP
-.B apply 
-.I {page_ranges}
+.B apply{page_ranges}
 .TP
-.B new
-.I {page_ranges}        
+.B new{page_ranges}
 
 add new page at the end of list
 
-.TP 
-.B del     
+.TP
+.B del
+
 
 delete list
-.TP
-.B scale 
-.I(scale=<real>)
 
-command for pages' content transform
+.TP
+.B scale
+.I (scale=<real>)
+
 scale pages in the list
+
+.RE
+Command for pages' content transform:
+.RS
+.TP 12
+.B scaleto
+.I (paper, top, right, bottom, left)
+
+fit page to paper
+
 .TP
-.B scaleto 
-.I (scale=<id>, top=36.00 pt, right=36.00 pt, bottom=36.00 pt, left=36.00 pt)
+.B scaleto2
+.I (x, y, top, right, bottom, left)
 .TP
-.B scaleto2 
-.I (x=<mesure>, y=<mesure>, top=36.00 pt, right=36.00 pt, bottom=36.00 pt, left=36.00 pt)
-.TP
-.B flip 
-.I (mode=<id>)  
+.B flip
+.I (mode=<id>)
 
 horizontal | vertical
+
 .TP
-.B number 
-.I (x=<int>, y=<int>, start=1, text="default", font="default", size=10)
+.B number
+.I (x, y, start, text, font, size)
 
 add numbers to pages
-.TP 
-.B crop 
-.I (paper=<id>)
+
+.TP
+.B crop
+.I (paper)
 .TP
 .B crop2
-.I (lx=<int>, ly=<int>, hx=<int>, hy=<int>)
+.I (lx, ly, hx, hy)
 .TP
-.B paper 
-.I (paper=<id>)
+.B paper
+.I (paper)
+
+sets paper size
+
 .TP
-.B paper2 
-.I (x=<mesure>,y=<mesure>)
+.B paper2
+.I (x,y)
+
+sets papes size to exact size
+
 .TP
 .B orient 
-.I (orient=<id>)
+.I (orient)
 
 set text orientation the page landscape|portrait
-.TP 
-.B nup 
-.I (x=<int>, y=<int>, dx=0.00 pt, dy=0.00 pt, orient=unknown, rotate=0, by_bbox=0, paper=default, frame=0, center=1)
+
 .TP
-.B merge   
+.B nup
+.I (x, y, dx, dy, orient, rotate, by_bbox, paper, frame, center)
+
+If is set only x to some value n, then command puts n pages to one paper.
+If is set x and y, then command puts x*y pages to one paper. X means number of columns and y means number of rows.
+Paper is name of final paper size (e.g. a4,letter ...). Rotate will rotate each page before fitting.
+
+.TP
+.B merge
+
 merge list to one page
+
 .TP
-.B text 
-.I(x=<int>, y=<int>, text=<str>, font="default", size=10)
+.B text
+.I (x, y, text, font, size)
 
 write text to page
+
 .TP
 .B line 
-.I (lx=<int>,ly=<int>,hx=<int>,hy=<int>,width=2)
+.I (lx,ly,hx,hy,width)
 
 draw line to page
+
 .TP
-.B rotate 
-.I (angle=<int>)
+.B rotate
+.I (angle)
 
 rotate page
-.TP 
-.B move
-.I(x=<mesure>, y=<mesure>)
 .TP
-.B bbox
+.B move
+.I(x, y)
+.TP
+.B matrix
+.I(a,b,c,d,e,f)
+
+
+transform by matrix
+
+.RE
 Misc commands:
-recalculate bbox on each page by GS
-cmarks(by_bbox=1)
-                  add printing marks
-duplex(long-edge=1)
-bbox
-norm(center=1,scale=1,l_bbox=1,g_bbox=1)
-                  normalize  pages
+.RS
+.TP 12
+.B bbox
+
+
+recalculate bbox on each page by GhostScript
+
+.TP
+.B cmarks(by_bbox=1)
+
+add printing marks, if by_bbox is 0 then printing marks are added by paper size, 
+else they are added by bounding box
+
+.TP
+.B duplex
+.I (long-edge)
+
+aranges pages for duplex printing
+
+.TP
+.B norm
+.I (center,scale,l_bbox,g_bbox)
+
+normalize  pages in list on the same size
+
 .RE
 .sp
 
 
+.RE
 .SH OPTIONS
 .TP
 .B "\-h  \-\-help"
@@ -186,15 +235,45 @@ read commands from file
 
 .SH EXAMPLE
 This section contains some sample re-arrangements. To put two pages on one
-sheet (of A4 paper), the pagespec to use is:
+sheet (of A4 paper):
 .sp
 .ce
-nup(1,2,rotate=90,paper=a4)
+.B nup(2, paper=a4)
+.sp
+or:
+.sp
+.ce
+.B nup(1,2, paper=a4,rotate=90)
 .sp
 To re-arrange pages for printing 2-up booklets, use
 .sp
 .ce
-book nup(1,2,rotate=90,paper=a4)
+.B book nup(2, paper=a4)
+.sp
+select first five pages from document
+.sp
+.ce
+.B select{1..5}
+.sp
+delete last page from document
+.sp
+.ce
+.B apply{-1 del}
+.sp
+reverse pages in document
+.sp
+.ce
+.B modulo{-1}
+.sp
+select even pages form document
+.sp
+.ce
+.B modulo(2){2}
+.sp
+fit page to a4
+.sp
+.ce
+.B scaleto(a4)
 .SH AUTHORS
 Ales Snuparek <snuparek@atlas.cz>
 .SH TRADEMARKS
@@ -206,5 +285,6 @@ are  trademarks of Adobe Systems Incorporated.
 .SH BUGS
 .I Pdftool
 does not accept all types of PDF and PostScript files.
+Cannot cut two or more PostScript files together.
 
 
