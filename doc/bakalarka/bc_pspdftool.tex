@@ -242,7 +242,7 @@ Tento stav je mo¾né ulo¾it, respektive obnovit, pomocí operátorù {\it gsave} a {
 \section{Afinní transformace}
 Afinní transformace se aplikuje na jednotlivé grafické objekty. Touto transformací lze popsat v¹echny bì¾né transformace,
 jako je posunutí, otoèení nebo  zmìna velikosti. Lze jí reprezentovat pomocí transformaèní maticí $3\times3$. Tuto reprezentaci pou¾ívá 
-PostScript a PDF. V~pøípadì bodu se souøadnicemi $[x,y]$ vypadá následovnì.
+PostScript a PDF. Pro bod se souøadnicemi $[x,y]$ vypadá následovnì.
 $$[x',  y',  1] = [x, y, 1]  \times
 \pmatrix{
 a & b & 0 \cr
@@ -599,7 +599,7 @@ Dal¹í parametry jsou: size (velikost písma), font (název øezu písma, font musí b
 {\tt duplex(long-edge)}&	pootáèí stránky v~seznamu pro duplexní tisk, parametr long-edge øíká, podle jaké strany papíru se bude otáèet (1 del¹í, 0 krat¹í)\\
 {\tt flip(mode)}& zrcadlovì otoèí v¹echny stráneky v~seznamu, {\it horizontal{\tt |}h} vodorovnì, {\it vertical{\tt |}v} svisle. \\
 {\tt line(b\_x, b\_y, e\_x, e\_y, size)}& nakreslí èáru ¹íøky {\it size} mezi body {\it b\_x, b\_y} a { \it e\_x, e\_y} \\
-{\tt matrix(a,b,c,d,e,f)}& provede afinní transformaci souøadnic stránky dle zadané matice\\
+{\tt matrix(a,b,c,d,e,f)}& provede afinní transformaci souøadnic stránky dle zadané matice, význam jednotlivých argumentù viz. kapitola o~afinní transformaci\\
 {\tt merge}& spojí stránky v~seznamu do jedné (polo¾í je pøes sebe)\\
 {\tt modulo(pages, half, round)\{page\_ranges\}}&\\
 {\tt move(x, y)}& posune obsah stránky o~{\it x, y}\\
@@ -610,7 +610,7 @@ poèátek èíslování, {\it font}  jméno fontu {\it øetìzec}, text, který se má na s
 {\tt nup(x, y, dx, dy, orientation, frames)}& pøeskládá $x\cdot y$ stránek na jednu, {\it x} poèet stránek ve vodorovném smìru,
 {\it y} poèet stránek ve svislém smìru, {\it dx} mezera mezi stránkami ve vodorovném smìru, {\it dy} mezera mezi stránkami ve svislém smìru, {\it orientation} zpùsob rovnání stránek,
 {\it frames} stránky budou orámovány\\
-{\tt orient(landscape{\tt |}portrait)}&  nastaví orientaci textu na stránkách v~seznamu\\
+{\tt orient(landscape{\tt |}portrait)}&  nastaví orientaci textu na stránkách v~seznamu, neprovede se ¾ádná zmìna obsahu stránky, tato informace je dùle¾itá pro pøikaz nup, ovlivòuje zpùsob kladení stránek\\
 {\tt paper(paper\_size)}& nastaví velikost papíru stránkám v~seznamu, neprovede se ¾ádná zmìna mìøítka\\
 {\tt paper2(x, y)}& nastaví explicitní rozmìry papíru\\
 {\tt read(name)} & pøipojí na konec seznamu  stránky ze souboru {\it name}, {\it name} je øetìzec\\
