@@ -36,7 +36,7 @@ enum {  CMD_TOK_UNKNOWN,
 	CMD_TOK_LCPAR,
 	CMD_TOK_RCPAR,
 	CMD_TOK_MINUS,
-	CMD_TOK_MESURE
+	CMD_TOK_MEASURE
 };
 
 struct id_str{
@@ -198,59 +198,59 @@ static param  cmd_modulo_params[] = {{"pages",CMD_TOK_INT,CMD_TOK_UNKNOWN,0,0,NU
 static param  cmd_duplex_params[] = {{"long-edge",CMD_TOK_INT,CMD_TOK_INT,1,0,NULL}};
 static param  cmd_scale_params[] = {{"scale",CMD_TOK_REAL,CMD_TOK_UNKNOWN,0,0,NULL}};
 static param  cmd_scaleto_params[] = {{"paper",CMD_TOK_ID,CMD_TOK_UNKNOWN,0,0,NULL},
-				 {"top",CMD_TOK_MESURE,CMD_TOK_MESURE,0,36,NULL},
-				 {"right",CMD_TOK_MESURE,CMD_TOK_MESURE,0,36,NULL},
-				 {"bottom",CMD_TOK_MESURE,CMD_TOK_MESURE,0,36,NULL},
-				 {"left",CMD_TOK_MESURE,CMD_TOK_MESURE,0,36,NULL},
+				 {"top",CMD_TOK_MEASURE,CMD_TOK_MEASURE,0,36,NULL},
+				 {"right",CMD_TOK_MEASURE,CMD_TOK_MEASURE,0,36,NULL},
+				 {"bottom",CMD_TOK_MEASURE,CMD_TOK_MEASURE,0,36,NULL},
+				 {"left",CMD_TOK_MEASURE,CMD_TOK_MEASURE,0,36,NULL},
 				};
-static param  cmd_scaleto2_params[] = {{"x",CMD_TOK_MESURE,CMD_TOK_UNKNOWN,-1,0,NULL},
-				{"y",CMD_TOK_MESURE,CMD_TOK_UNKNOWN,-1,0,NULL},
-				 {"top",CMD_TOK_MESURE,CMD_TOK_MESURE,0,36,NULL},
-				 {"right",CMD_TOK_MESURE,CMD_TOK_MESURE,0,36,NULL},
-				 {"bottom",CMD_TOK_MESURE,CMD_TOK_MESURE,0,36,NULL},
-				 {"left",CMD_TOK_MESURE,CMD_TOK_MESURE,0,36,NULL},
+static param  cmd_scaleto2_params[] = {{"x",CMD_TOK_MEASURE,CMD_TOK_UNKNOWN,-1,0,NULL},
+				{"y",CMD_TOK_MEASURE,CMD_TOK_UNKNOWN,-1,0,NULL},
+				 {"top",CMD_TOK_MEASURE,CMD_TOK_MEASURE,0,36,NULL},
+				 {"right",CMD_TOK_MEASURE,CMD_TOK_MEASURE,0,36,NULL},
+				 {"bottom",CMD_TOK_MEASURE,CMD_TOK_MEASURE,0,36,NULL},
+				 {"left",CMD_TOK_MEASURE,CMD_TOK_MEASURE,0,36,NULL},
 				};
 
 static param  cmd_flip_params[] = {{"mode",CMD_TOK_ID,CMD_TOK_UNKNOWN,0,0,NULL}};
-static param cmd_number_params[] = {{"x",CMD_TOK_INT,CMD_TOK_MESURE,-1,0,NULL},
-				    {"y",CMD_TOK_INT,CMD_TOK_MESURE,-1,0,NULL},
+static param cmd_number_params[] = {{"x",CMD_TOK_MEASURE,CMD_TOK_MEASURE,-1,0,NULL},
+				    {"y",CMD_TOK_MEASURE,CMD_TOK_MEASURE,-1,0,NULL},
 				    {"start",CMD_TOK_INT,CMD_TOK_INT,1,0,NULL},
 				    {"text",CMD_TOK_STR,CMD_TOK_STR,0,0,NULL},
 				    {"font",CMD_TOK_STR,CMD_TOK_STR,0,0,NULL},
 				    {"size",CMD_TOK_INT,CMD_TOK_INT,10,0,NULL}};
 static param cmd_crop_params[] = {{"paper",CMD_TOK_ID,CMD_TOK_UNKNOWN,0,0,NULL}};
-static param cmd_crop2_params[] = {{"lx",CMD_TOK_MESURE,CMD_TOK_UNKNOWN,0,0,NULL},
-				  {"ly",CMD_TOK_MESURE,CMD_TOK_UNKNOWN,0,0,NULL},
-				  {"hx",CMD_TOK_MESURE,CMD_TOK_UNKNOWN,0,0,NULL},
-				  {"hy",CMD_TOK_MESURE,CMD_TOK_UNKNOWN,0,0,NULL}};
-static param cmd_paper_params2[] = {{"x",CMD_TOK_MESURE,CMD_TOK_UNKNOWN,0,0,NULL},
-				   {"y",CMD_TOK_MESURE,CMD_TOK_UNKNOWN,0,0,NULL}};
+static param cmd_crop2_params[] = {{"lx",CMD_TOK_MEASURE,CMD_TOK_UNKNOWN,0,0,NULL},
+				  {"ly",CMD_TOK_MEASURE,CMD_TOK_UNKNOWN,0,0,NULL},
+				  {"hx",CMD_TOK_MEASURE,CMD_TOK_UNKNOWN,0,0,NULL},
+				  {"hy",CMD_TOK_MEASURE,CMD_TOK_UNKNOWN,0,0,NULL}};
+static param cmd_paper_params2[] = {{"x",CMD_TOK_MEASURE,CMD_TOK_UNKNOWN,0,0,NULL},
+				   {"y",CMD_TOK_MEASURE,CMD_TOK_UNKNOWN,0,0,NULL}};
 static param cmd_paper_params[]= {{"paper",CMD_TOK_ID,CMD_TOK_UNKNOWN,0,0,NULL}};
 static param cmd_orient_params[] = {{"orient",CMD_TOK_ID,CMD_TOK_UNKNOWN,0,0,NULL}};
 static param cmd_nup_params[] = {{"x",CMD_TOK_INT,CMD_TOK_UNKNOWN,0,0,NULL},
 				 {"y",CMD_TOK_INT,CMD_TOK_INT,0,0,NULL},
-				 {"dx",CMD_TOK_MESURE,CMD_TOK_MESURE,0,0,NULL},
-				 {"dy",CMD_TOK_MESURE,CMD_TOK_MESURE,0,0,NULL},
+				 {"dx",CMD_TOK_MEASURE,CMD_TOK_MEASURE,0,0,NULL},
+				 {"dy",CMD_TOK_MEASURE,CMD_TOK_MEASURE,0,0,NULL},
 				 {"orient",CMD_TOK_ID,CMD_TOK_ID,0,0,"unknown"},
 				 {"rotate",CMD_TOK_INT,CMD_TOK_INT,0,0,NULL},
 				 {"by_bbox",CMD_TOK_INT,CMD_TOK_INT,0,0,NULL},
 				 {"paper",CMD_TOK_ID,CMD_TOK_ID,0,0,NULL},
 				 {"frame",CMD_TOK_INT,CMD_TOK_INT,0,0,NULL},
 				 {"center",CMD_TOK_ID,CMD_TOK_ID,0,0,NULL}};
-static param cmd_text_params[] = {{"x",CMD_TOK_MESURE,CMD_TOK_UNKNOWN,0,0,NULL},
-				 {"y",CMD_TOK_MESURE,CMD_TOK_UNKNOWN,0,0,NULL},
+static param cmd_text_params[] = {{"x",CMD_TOK_MEASURE,CMD_TOK_UNKNOWN,0,0,NULL},
+				 {"y",CMD_TOK_MEASURE,CMD_TOK_UNKNOWN,0,0,NULL},
 				 {"text",CMD_TOK_STR,CMD_TOK_UNKNOWN,0,0,NULL},
 				 {"font",CMD_TOK_STR,CMD_TOK_STR,0,0,NULL},
 				 {"size",CMD_TOK_INT,CMD_TOK_INT,10,0,NULL}};
-static param cmd_line_params[]   = {{"lx",CMD_TOK_MESURE,CMD_TOK_UNKNOWN,0,0,NULL},
-				    {"ly",CMD_TOK_MESURE,CMD_TOK_UNKNOWN,0,0,NULL},
-				    {"hx",CMD_TOK_MESURE,CMD_TOK_UNKNOWN,0,0,NULL},
-				    {"hy",CMD_TOK_MESURE,CMD_TOK_UNKNOWN,0,0,NULL},
-				    {"width",CMD_TOK_MESURE,CMD_TOK_MESURE,0,2,NULL}
+static param cmd_line_params[]   = {{"lx",CMD_TOK_MEASURE,CMD_TOK_UNKNOWN,0,0,NULL},
+				    {"ly",CMD_TOK_MEASURE,CMD_TOK_UNKNOWN,0,0,NULL},
+				    {"hx",CMD_TOK_MEASURE,CMD_TOK_UNKNOWN,0,0,NULL},
+				    {"hy",CMD_TOK_MEASURE,CMD_TOK_UNKNOWN,0,0,NULL},
+				    {"width",CMD_TOK_MEASURE,CMD_TOK_MEASURE,0,2,NULL}
 				   };
 static param cmd_rotate_params[] = {{"angle",CMD_TOK_INT,CMD_TOK_UNKNOWN,0,0,NULL}};
-static param cmd_move_params[]   = {{"x",CMD_TOK_MESURE,CMD_TOK_UNKNOWN,0,0,NULL},
-				    {"y",CMD_TOK_MESURE,CMD_TOK_UNKNOWN,0,0,NULL}};
+static param cmd_move_params[]   = {{"x",CMD_TOK_MEASURE,CMD_TOK_UNKNOWN,0,0,NULL},
+				    {"y",CMD_TOK_MEASURE,CMD_TOK_UNKNOWN,0,0,NULL}};
 
 static param cmd_cmarks_params[]   = {{"by_bbox",CMD_TOK_INT,CMD_TOK_INT,1,0,NULL}};
 
@@ -461,7 +461,7 @@ static void cmd_set_param_val(cmd_param * param, cmd_tok_struct * p_tok){
 		case CMD_TOK_INT:
 			param->number=p_tok->number;
 			return;
-		case CMD_TOK_MESURE:
+		case CMD_TOK_MEASURE:
 		case CMD_TOK_REAL:
 			param->real_number=p_tok->real_number;
 			return;
@@ -529,7 +529,7 @@ static int cmd_get_args(MYFILE * f, cmd_ent_struct * cmd, cmd_tok_struct * p_tok
 							param->real_number=param->number;
 						case CMD_TOK_REAL:
 							param->real_number*=unit_val;
-							param->type=CMD_TOK_MESURE;
+							param->type=CMD_TOK_MEASURE;
 							break;
 						default:
 							return -1;
@@ -685,14 +685,14 @@ int cmd_exec_command_(page_list_head * p_doc,cmd_ent_struct * cmd,int index){
 						return -1;
 				}
 				break;
-			case CMD_TOK_MESURE:
+			case CMD_TOK_MEASURE:
 				switch(argument->type){
 				case CMD_TOK_INT:
 						params[i].value=CMD_TOK_REAL;
 						params[i].real_number=argument->number;
 					break;
 				case CMD_TOK_REAL:
-				case CMD_TOK_MESURE:
+				case CMD_TOK_MEASURE:
 						params[i].value=CMD_TOK_REAL;
 						params[i].real_number=argument->real_number;
 					break;
@@ -765,14 +765,14 @@ int cmd_exec_command_(page_list_head * p_doc,cmd_ent_struct * cmd,int index){
 						return -1;
 				}
 				break;
-			case CMD_TOK_MESURE:
+			case CMD_TOK_MEASURE:
 				switch(argument->type){
 				case CMD_TOK_INT:
 						params[i].value=CMD_TOK_REAL;
 						params[i].real_number=argument->number;
 					break;
 				case CMD_TOK_REAL:
-				case CMD_TOK_MESURE:
+				case CMD_TOK_MEASURE:
 						params[i].value=CMD_TOK_REAL;
 						params[i].real_number=argument->real_number;
 					break;
@@ -877,7 +877,7 @@ static void cmd_free_args(cmd_param_head * params){
 				printf("i%ld\n",pom->number);
 				break;
 
-			case CMD_TOK_MESURE:
+			case CMD_TOK_MEASURE:
 			case CMD_TOK_REAL:
 				printf("f%f\n",pom->real_number);
 				break;
@@ -1346,7 +1346,7 @@ static int cmd_flip(page_list_head * p_doc, param params[], cmd_page_list_head *
 }
 
 static int cmd_number(page_list_head * p_doc, param params[], cmd_page_list_head * pages){
-	return pages_number(p_doc,params[0].int_number,params[1].int_number,params[2].int_number,
+	return pages_number(p_doc,params[0].real_number,params[1].real_number,params[2].int_number,
 			params[3].str,params[4].str,params[5].int_number);
 }
 
@@ -1572,8 +1572,8 @@ void cmd_print_info(FILE *f){
 							fprintf(f,"<str>");
 						}
 						break;
-					case CMD_TOK_MESURE:
-						if (cmd_commands[i].params[j].value==CMD_TOK_MESURE){
+					case CMD_TOK_MEASURE:
+						if (cmd_commands[i].params[j].value==CMD_TOK_MEASURE){
 							fprintf(f,"%.2f pt",cmd_commands[i].params[j].real_number);
 						}
 						else{
