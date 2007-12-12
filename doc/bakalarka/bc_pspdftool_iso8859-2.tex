@@ -15,7 +15,7 @@
 \usepackage[latin2]{inputenc} % nastavuje pou¾ité kódování, u¾ivatelé Windows zamìní latin2 za cp1250
 \usepackage[czech]{babel}
 \usepackage{a4} % nastavuje standardní evropský formát stránek A4
-%\usepackage{index} % nutno pou¾ít v~pøípadì tvorby rejstøíku balíèkem makeindex
+\usepackage{index} % nutno pou¾ít v~pøípadì tvorby rejstøíku balíèkem makeindex
 %\usepackage{fancybox} % umo¾òuje pokroèilé rámeèkování :-)
 \usepackage{graphicx} % nezbytné pro standardní vkládání obrázkù do dokumentu
 \usepackage{longtable}
@@ -242,7 +242,13 @@ Tento stav je mo¾né ulo¾it, respektive obnovit, pomocí operátorù {\it gsave} a {
 \section{Afinní transformace}
 Afinní transformace se aplikuje na jednotlivé grafické objekty. Touto transformací lze popsat v¹echny bì¾né transformace,
 jako je posunutí, otoèení nebo  zmìna velikosti. Lze jí reprezentovat pomocí transformaèní maticí $3\times3$. Tuto reprezentaci pou¾ívá 
-PostScript a PDF.
+PostScript a PDF. V~pøípadì bodu se souøadnicemi $[x,y]$ vypadá následovnì.
+$$[x',  y',  1] = [x, y, 1]  \times
+\pmatrix{
+a & b & 0 \cr
+c & d & 0 \cr
+e & f & 1 \cr
+}$$
 Jednotlivé transformace jsou uzavøené na skládání a v~pøípadì maticové reprezentace se jedná o~násobení matic.
 
 
@@ -255,10 +261,10 @@ Díky tìmto komentáøùm lze rozdìlit dokument na následující èásti:  prolog a scri
 Do prologu patøí header section, defaults section a procedure section. Èást Script mù¾eme rozdìlit na èást document setup, samostatné stránky a trailer.
 
 Na zaèátku souboru s~DSC komentáøi je øádek urèující verzi DSC, souèasná verze je 3.0. Po této øádce následuje vý¹e zmínìná hlavièka, jedná se o~souvislou oblast komentáøù (neobsahuje pøíkazy pro PS interpret).
-Hlavièka konèí komentáøem {\it \%\%EndComments},
+Hlavièka konèí komentáøem {\tt \%\%EndComments},
 nebo prázdným øádkem. V~hlavièce jsou uvedeny základní informace o~dokumentu, jako jsou: 
-poèet stránek {\it \%\%Pages: poèet stránek {\tt |}  (atend)}, orientace textu na stránce {\it \%\%Orientation: Portrait {\tt |}  Landscape}, 
-bounding box, poøadí stránek v~dokumentu {\it \%\%PageOrder: Ascend {\tt |}  Descend {\tt |}  Special {\tt |}  (atend)}.
+poèet stránek {\tt \%\%Pages: poèet stránek {\tt |}  (atend)}, orientace textu na stránce {\tt \%\%Orientation: Portrait {\tt |}  Landscape}, 
+bounding box, poøadí stránek v~dokumentu {\tt \%\%PageOrder: Ascend {\tt |}  Descend {\tt |}  Special {\tt |}  (atend)}.
 Symbol {\tt (atend)} místo konkrétní hodnoty bude nahrazen hodnotou patøièné vlastnosti z~traileru na konci souboru.
 %Pokud je hodnota parametru rovna {\tt (atend)} znamená, ¾e hodnota pøíslu¹né vlastnosti bude uvedena na konci souboru v~traileru.
 
@@ -271,15 +277,15 @@ Toto místo je vhodné pro pøidání vlastních definicí (napøíklad nových operátorù)
  V~sekci  document setup mù¾e být postscriptový kód pro nastavení tiskárny (velikost papíru, nahrání fontù).
 Po ní následují jednotlivé stránky.
 
- Zaèátek stránky, oznaèuje komentáø {\it \%\%Page: jméno\_stránky  její\_èíslo}. Pøi tisku by nemìly být stránky závislé na poøadí, v~jakém jsou uvedeny v~souboru.
+ Zaèátek stránky, oznaèuje komentáø {\tt \%\%Page: jméno\_stránky  její\_èíslo}. Pøi tisku by nemìly být stránky závislé na poøadí, v~jakém jsou uvedeny v~souboru.
  Samotnou stránku lze obdobnì jako celý dokument rozdìlit na nìkolik èásti: Page Setup, obsah stránky, PageTrailer. Toto dìlení je nepovinné a vìt¹ina programù
  generujících PostScript ho nepou¾ívá.
 U~ka¾dé stránky lze za pomoci DSC explicitnì vyjádøit rozmìr papíru, orientaci textu a bounding box.
 
 Po v¹ech stránkách následuje Trailer. Mù¾e obsahovat kód pro uvedení PS interpretu do výchozího stavu pøed tiskem a mù¾e obsahovat podobné informace, jako obsahuje hlavièka.
- Soubor je zakonèen øádkem {\it \%\%EOF}.
+ Soubor je zakonèen øádkem {\tt \%\%EOF}.
 
-\subsubsection*{pøíklad souboru s~DSC komentáøem:}
+\subsubsection*{Pøíklad souboru s~DSC komentáøem:}
 
 \begin{verbatim}
 %!PS-Adobe-3.0
@@ -352,11 +358,11 @@ Pro podrobnìj¹í specifikaci PDF doporuèuji nahlédnout Adobe PDF reference Manual
 \chapter{Souèasné programy}
 Ve své práci jsem se zamìøil pøevá¾nì na programy PSUtils a pdftk, a to z dùvodu jejich dostupnosti. Jsem si vìdom, ¾e existují následující programy: FinePrint, Acrobat, ale vzhledem k~jejich dostupnosti (licence) jsem se zamìøil na ji¾ zmínìné dva. 
 \section{PSUtils}
-PSUtils \cite{psutils} jsou sadou nástrojù pro práci s~PostScriptovými dokumenty. Mezi tyto programy patøí: psnup (uspoøádání více stránek na jednu), psselect (výbìr jednotlivých stránek z~dokumentu), pstops (nástroj pro obecné transformace), psbook (tvorba tiskových signatur pro tisk bookletù) a psresize (zmìna rozmìrù stránek). PSUtils jsou napsány v~jazyce~C a obsahují nìkolik skriptù napsaných v~perlu.
+PSUtils \cite{psutils} jsou sadou nástrojù pro práci s~PostScriptovými dokumenty. Mezi tyto programy patøí: psnup (uspoøádání více stránek na jednu), psselect (výbìr jednotlivých stránek z~dokumentu), pstops (nástroj pro libovolné transformace), psbook (tvorba tiskových signatur pro tisk bookletù) a psresize (zmìna rozmìrù stránek). PSUtils jsou napsány v~jazyce~C a obsahují nìkolik skriptù napsaných v~perlu.
 
-PSUtils umí vìt¹inu pøedtiskových operací, které je mo¾né provádìt s~dokumentem pøed tiskem. Neumí v¹ak následující operace: zrcadlení stránek,
-kreslení èi psaní textu na stránku. O~tyto operace lze nástroj snadno roz¹íøit. PSUtils umí spojit nìkolik dokumentù do jednoho, ale pouze takové, které mají stejný prolog.
-
+PSUtils umí vìt¹inu z~vý¹e zmínìných pøedtiskových operací. Nástroj pstops umí kombinovat násldedující základní operace: zmìnu velikosti stránky, rotaci stránky o~násobky 90 stupòù, posunutí stránky a spojení dvou stránek.
+Umí spojit nìkolik dokumentù do jednoho, ale pouze takové, které mají stejný prolog.
+Nelze v¹ak s~ním provédst následující operace: zrcadlení stránek, kreslení èi psaní textu na stránku.
 
 \section{Pdftk}
 Jedná se o~nástroj \cite{pdftk} napsaný v~jazyce Java. Tímto programem je mo¾né provádìt následující operace: spojení dvou dokumentù do jednoho,
@@ -390,6 +396,28 @@ výstupní soubor. Jednotlivé pøíkazy se mezi sebou oddìlují bílými znaky
 {\tt vstupní\_seznam\_stránek \(\rightarrow\) pøíkaz \(\rightarrow\) výstupní\_seznam\_stránek }
 \end{center}
 
+\subsubsection*{Pøíklady:}
+\small{
+\begin{tabular}{lp{8 cm}}
+{\tt pspdftool "nup(2, paper=a4)" in.pdf out.pdf}  & naète soubor in.pdf aplikuje na seznam stránek pøíkaz nup a výsledek ulo¾í do souboru out.pdf (uvozovky kolem pøíkazu jsou kvùli shellu)\\
+{\tt pspdftool -f cmds.txt in.pdf out.pdf } & na rozdíl od pøedchozího se budou èíst pøíkazy ze souboru mycmds.txt\\
+\end{tabular}
+}
+\vspace{5mm}
+
+\subsubsection*{Ú¾iteèné pøikazy:}
+\small{
+\begin{tabular}{lp{8 cm}}
+{\tt select\{1..5\}}  & vybere se prvních pìt stránek ze seznamu\\
+{\tt scaleto(a4)} & pøizpùsobí velikosti stránky na papír velikosti a4\\
+{\tt nup(2)}&vyrovnání dvou stránek na jednu\\
+{\tt book}& pøerovnání stránek pro tisk bookletu\\
+{\tt apply\{-1 del\}}& smazání pospední stránky v seznamu
+\end{tabular}
+}
+\vspace{5mm}
+
+
 Pøíkaz se skládá ze tøí èástí: názvu, jeho parametrù a selektoru stránek.
 Název je posloupnost znakù identifikující typ pøíkazu.  
 
@@ -410,7 +438,7 @@ Pozièní parametry musí v¾dy být pøed pojmenovanými.
 Nìkteré parametry mohou mít uvedenou výchozí hodnotu. Potom není nutné
 tento argument explicitnì uvádìt.
 
-\subsubsection*{pøíklady:}
+\subsubsection*{Pøíklady:}
 
 \begin{tabular}{lp{10 cm}}
 	{\tt foo}    &    pøíkaz bez parametru\\
@@ -428,7 +456,7 @@ Výbìr stránek mù¾e být èíslo, pøípadnì interval. Pokud výbìr zaèíná '-', jedna
 se o~výbìr z~konce seznamu, bì¾nì se indexuje od zaèátku. Za výbìrem mù¾e 
 následovat seznam pøíkazù, které se na nìm vykonají.
 
-\subsubsection*{pøíklady:}
+\subsubsection*{Pøíklady:}
 \small{
 \begin{tabular}{lp{8 cm}}
 	{\tt 1}        &  výbìr stánky 1\\
@@ -438,14 +466,11 @@ následovat seznam pøíkazù, které se na nìm vykonají.
 	&\\
 	{\tt foo(a)\{1..2 foo1\}} & pøíkaz {\tt foo} s parametrem {\it a} a selektorem {\it1..2}, na který se aplikuje pøíkaz {\tt foo1}\\
 	foo\{1..2 -1..2\} & pøíkaz {\tt foo} bez parametru a selektory {\it 1..2} a {\it -1..2}\\
-	&\\
-	{\tt pspdftool "foo" in.pdf out.pdf}  & naète soubor in.pdf aplikuje na seznam stránek pøíkaz foo a výsledek ulo¾í do souboru out.pdf (uvozovky kolem pøíkazu jsou kvùli shellu)\\
-	{\tt pspdftool -f cmds.txt in.pdf out.pdf } & na rozdíl od pøedchozího se budou èíst pøíkazy ze souboru mycmds.txt\\
 \end{tabular}
 }
 \vspace{5mm}
 
-\subsubsection*{syntaxe pøíkazu:}
+\subsubsection*{Syntaxe pøíkazu:}
 \begin{center}
 {\small \texttt{jméno(pevný\_parametr\_1,~\ldots, název\_parametru=hodnota,~\ldots)
    \{výbìr pøíkazy~\ldots\}}\}}
@@ -481,7 +506,7 @@ Dal¹í u¾iteènou operací mù¾e být pøerovnání stránek pro tisk kní¾eèky.
 \vspace{5mm}
 \begin{tabular}{lp{10 cm}}
 {\tt book} & pøerovná stránky pro tisk bookletu\\
-{\tt book} nup(2) & nejprve pøerovná stránky pro tisk bookletu, pak umístí dvì stránky na jednu\\
+{\tt book nup(2)} & nejprve pøerovná stránky pro tisk bookletu, pak umístí dvì stránky na jednu\\
 \end{tabular}
 \vspace{5mm}
 
@@ -506,12 +531,12 @@ Nejprve popi¹me modulo, první parametr n udává poèet stránek ve skupinách, na kt
 násobkem èísla n, pøidá se na konec seznamu pøíslu¹ný poèet prázdných stránek, aby seznam mìl délku rovnu násobku èísla n. Pokud je nastaven parametr round, n je rovno  max(n,round).
 Na ka¾dou skupinu je aplikován výbìr a provedou se pøíslu¹né pøíkazy. Pokud výbìr stránky obsahuje symbol '-' vybírají se stránky ze skupiny,
 která je zrcadlovì symetrická dle støedu seznamu. Výsledná skupina seznamu je spojena do výstupního seznamu.
-\subsubsection*{pøíklad:}
-Vezmeme seznam  stránek '1 2 3 4 5' a aplikujeme na nìj modulo s n rovným 3. Nejprve se seznam doplní na vhodnou délku '1 2 3 4 5 6' 
-a rozdìlí se na pøílslu¹né skupinky '1 2 3' a '4 5 6'. Vybereme \{1 -1\} '1 6' a '4 3' a výsledek spojíme '1 6 4 3'.
-Pokud parametr half je roven 1, zpracovává se pouze polovina skupinek. V~tom pøípadì je výsledek pøedchozího pøíkladu '1 6'.
+\subsubsection*{Pøíklad:}
+Vezmeme seznam  stránek {\tt '1 2 3 4 5' }a aplikujeme na nìj modulo s $n$ rovným {\tt 3}. Nejprve se seznam doplní na vhodnou délku {\tt '1 2 3 4 5 6' }
+a rozdìlí se na pøílslu¹né skupinky {\tt '1 2 3'} a {\tt '4 5 6'}. Vybereme {\tt \{1 -1\}} {\tt '1 6' a '4 3'} a výsledek spojíme {\tt '1 6 4 3'}.
+Pokud parametr half je roven {\tt 1}, zpracovává se pouze polovina skupinek. V~tom pøípadì je výsledek pøedchozího pøíkladu {\tt '1 6'}.
 
-\subsubsection*{pøíklady:}
+\subsubsection*{Pøíklady:}
 \vspace{5mm}
 \begin{tabular}{lp{10 cm}}
  {\tt modulo(2,half=1)\{-1 1 2 -2\}} &	odpovídá operátoru book\\
@@ -574,6 +599,7 @@ Dal¹í parametry jsou: size (velikost písma), font (název øezu písma, font musí b
 {\tt duplex(long-edge)}&	pootáèí stránky v~seznamu pro duplexní tisk, parametr long-edge øíká, podle jaké strany papíru se bude otáèet (1 del¹í, 0 krat¹í)\\
 {\tt flip(mode)}& zrcadlovì otoèí v¹echny stráneky v~seznamu, {\it horizontal{\tt |}h} vodorovnì, {\it vertical{\tt |}v} svisle. \\
 {\tt line(b\_x, b\_y, e\_x, e\_y, size)}& nakreslí èáru ¹íøky {\it size} mezi body {\it b\_x, b\_y} a { \it e\_x, e\_y} \\
+{\tt matrix(a,b,c,d,e,f)}& provede afinní transformaci souøadnic stránky dle zadané matice\\
 {\tt merge}& spojí stránky v~seznamu do jedné (polo¾í je pøes sebe)\\
 {\tt modulo(pages, half, round)\{page\_ranges\}}&\\
 {\tt move(x, y)}& posune obsah stránky o~{\it x, y}\\
@@ -586,13 +612,13 @@ poèátek èíslování, {\it font}  jméno fontu {\it øetìzec}, text, který se má na s
 {\it frames} stránky budou orámovány\\
 {\tt orient(landscape{\tt |}portrait)}&  nastaví orientaci textu na stránkách v~seznamu\\
 {\tt paper(paper\_size)}& nastaví velikost papíru stránkám v~seznamu, neprovede se ¾ádná zmìna mìøítka\\
-{\tt paper2}(x, y)& nastaví explicitní rozmìry papíru\\
+{\tt paper2(x, y)}& nastaví explicitní rozmìry papíru\\
 {\tt read(name)} & pøipojí na konec seznamu  stránky ze souboru {\it name}, {\it name} je øetìzec\\
 {\tt rotate(angle)}& otoèí stránky o~úhel {\it angle} ve stupních\\
 {\tt scale(scale)} &	zmìní velikost stránek v zadaném mìøítku $scale<1$ zmen¹ení, $scale>1$ zvìt¹ení\\
 {\tt scaleto(paper, top, right, bottom, left)} &zmìní velikost v¹ech stránek v~seznamu, {\it paper\_size} je velikost papíru, na kterou se stránka pøetransformuje, okraje jsou explicitnì nastaveny na pùl palce\\
 {\tt scaleto2(x, y, top, right, bottom, left)} &zmìní velikost v¹ech stránek v~seznamu na explicitní velikost papíru, provádí se zmìna mìøítka\\
-{\tt select\{page\_ranges\}}& vybere stránky dle {\it seznamy\_stránek}, aplikuje  na nì pøíslu¹né pøíkazy, výsledný seznam obsahuje stránky z~výbìru\\
+{\tt select\{page\_ranges\}}& vybere stránky dle {\it page\_ranges}, aplikuje  na nì pøíslu¹né pøíkazy, výsledný seznam obsahuje pouze stránky z~výbìru\\
 {\tt text(x, y, text, size, font)}& nakreslí text na v¹echny stránky v~seznamu,{ \it  x,y} umístìní na stránce, { \it size} velikost fontu, { \it font} jméno fontu, parametry { \it size} a { \it font} jsou nepovinné\\
 {\tt write(name)}& ulo¾í seznam stránek do souboru {\it name}, {\it name} je øetìzec \\
 \end{longtable}
@@ -618,7 +644,7 @@ nebo pou¾ít balíèek se zdrojovými kódy a rozbalit jej\\
 
 Program funguje pod Linuxem a Mac OS X. Mìl by pøenosný i na ostatní UNIXové systémy, na kterých nebyl testován.  Potøebuje ke své èinnosti zlib a GhostScript.
 
-
+\chapter{Pspdftool - implemntace}
 
 \section{Zobecnìní dokumentu}
 Dokument urèený pro tisk obsahuje informace o~stránkách a jejich vlastnostech. Pro reprezentaci stránek jsem zvolil spojový seznam. Jeho prvky odpovídají jednotlivým stránkám v~dokumentu.
