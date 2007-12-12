@@ -645,6 +645,7 @@ nebo pou¾ít balíèek se zdrojovými kódy a rozbalit jej\\
 Program funguje pod Linuxem a Mac OS X. Mìl by pøenosný i na ostatní UNIXové systémy, na kterých nebyl testován.  Potøebuje ke své èinnosti zlib a GhostScript.
 
 \chapter{Pspdftool - implemntace}
+V~této kapitole se nachází popis jednotilvých èástí pspdftoolu. Program je napsaný v jazyce C.
 
 \section{Zobecnìní dokumentu}
 Dokument urèený pro tisk obsahuje informace o~stránkách a jejich vlastnostech. Pro reprezentaci stránek jsem zvolil spojový seznam. Jeho prvky odpovídají jednotlivým stránkám v~dokumentu.
@@ -671,6 +672,13 @@ Pro ovìøení návrhu knihovny jsem implementoval následující formáty PostScript a 
 Ka¾dý formát musí obsahovat funkci, která je pøedána funkci {\it doc\_register\_format} pro pøidání nového formátu do pspdftoolu. Pøi registraci formátu je této  funkci pøedána struktura definující interface mezi závislou a nezávislou  èástí na formátu.
 Funkce naplní ve struktuøe ukazatele na rutiny pro práci s~novým formátem. Struktura obsahuje jednoznaènou tøípísmennou identifikaci formátu (z~pravidla koncovka dokumentu).
 
+Za zmínku stojí implementace funkce, která nastavuje stránce transformaèní matici. Pokud je funkce nìkolikrát posobì volána na stejnou stránku, 
+nová matice se vynásobí s~aktuální. 
+
+Pro sní¾ení pamìtových nárokù programu, pamatuji si u~ka¾dé stránky poèet referencí, které se na ní okdazují. 
+Pøi kopírování stránky se zvý¹í poèítadlo referencí. Stránka se kopíruje pouze, pokud je potøeba ji zmìnit. 
+Obdobný mechanismus je pou¾it i pro kopírování seznamù.
+
 \subsection{PostScript}
 Od~PostScriptového souboru po¾adujeme, aby obsahoval DSC komentáøe. Bez nich nejsme schopni urèit, ani¾ by bylo potøeba PostScript interpretovat,
 kde zaèíná a konèí pøíslu¹ná stránka dokumentu. PostScriptové soubory, jak bylo uvedeno vý¹e, nelze jednodu¹e spojovat dohromady.
@@ -692,7 +700,7 @@ obnovení grafického stavu interpretu PostScriptu. Na konec jednotlivých stránek 
 
 
 \subsection{PDF}
-U~PDF dokumentu je mo¾né implementovat v¹echny operace. V~dokumentu se pøeètou v¹echny objekty. Objekty stránek se pøevedou na objekty XObject. K~pùvodní stránce se vytvoøí nová stránka, která obsahuje XObject z~pùvodní stránky. U~ka¾dé stránky v~seznamu si pamatuji pøíslu¹né èíslo objektu, který ji reprezentuje. Pøi ukládání dokumentu se vygeneruje ze seznamu stránek
+U~PDF dokumentu je mo¾né implementovat v¹echny pøedtiskové úpravy. V~dokumentu se pøeètou v¹echny objekty. Objekty stránek se pøevedou na objekty XObject. K~pùvodní stránce se vytvoøí nová stránka, která obsahuje XObject z~pùvodní stránky. U~ka¾dé stránky v~seznamu si pamatuji pøíslu¹né èíslo objektu, který ji reprezentuje. Pøi ukládání dokumentu se vygeneruje ze seznamu stránek
 strom stránek (dle specifikace PDF), odstraní se nepou¾ité objekty (prohledáním do hloubky od Catalog objektu).  Do souboru se zapí¹í v¹echny pou¾ité objekty a na konec se pøidá trailer a tabulka referencí.
 
 Operace typu transformace, spojení dvou stránek do jedné, kreslení èar a psaní textu se týkají streamu pøíslu¹né stránky. Proto¾e jsme si vytvoøili z~pùvodních stránek XObjecty a nové stránky, které se na nì odkazují, mají stream v~nezakódované podobì. Není tedy potøeba implementovat jednotlivé filtry pro práci se streamem. Spojení dvou stránek odpovídá spojení dvou Content Streamù za sebe. Kreslení a transformace  odpovídá pøidání pøíslu¹ných operátorù do Content Streamu stránky.
@@ -705,6 +713,10 @@ Pokud nebude k~dispozici filtr pro práci se streamem, program vygeneruje varovan
 
 Pro operaci spojení dvou dokumentù je potøeba v~jednom z~dokumentù pøeèíslovat objekty tak, aby nekolidovaly s~druhým dokumentem. V~pspdftoolu je pou¾ito následující
 øe¹ení: v~pøipojovaném dokumentu se pøiète ke ka¾dému èíslu objektu èíslo udávající poèet objektù v~druhém souboru. 
+
+Pøi zápisu nového dokumentu se nejprve ze stránek v~seznamu vygeneruje vyvá¾ený strom a 
+odstraní nepou¾ité objekty. Tato operace se provádí za pomoci prohledávání objektù do hloubky z~catalog objektu.
+Po této operaci se zapí¹í objekty do souboru a vygeneruje se k~nim cross reference table. 
 
 Implementace formátu plnì podporuje PDF do verze 1.4. Novìj¹í PDF obsahují napøíklad tato roz¹íøení: ObjectStreams a Cross-Reference Streams. 
 Proto¾e tato roz¹íøení nejsou èasto vyu¾ívána, nepova¾oval jsem za dùle¾ité, aby s~nimi umìl nástroj pracovat.
