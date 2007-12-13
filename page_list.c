@@ -177,6 +177,7 @@ page_list * page_num_to_ptn(page_list_head * plist, int number){
 	}
 
 	if (number<0 || number>pages_count(plist)){
+		message(FATAL,"number %d is out of pages count.\n",number);
 		printf("%d\n",number);
 		assert(0);
 		return NULL;
