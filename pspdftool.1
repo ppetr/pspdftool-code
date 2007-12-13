@@ -250,10 +250,10 @@ To re-arrange pages for printing 2-up booklets, use
 .ce
 .B book nup(2, paper=a4)
 .sp
-select first five pages from document
+select first five pages and last one from document
 .sp
 .ce
-.B select{1..5}
+.B select{1..5 -1}
 .sp
 delete last page from document
 .sp
@@ -263,7 +263,7 @@ delete last page from document
 reverse pages in document
 .sp
 .ce
-.B modulo{-1}
+.B modulo(2){-1}
 .sp
 select even pages form document
 .sp

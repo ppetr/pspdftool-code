@@ -212,8 +212,8 @@ static param  cmd_scaleto2_params[] = {{"x",CMD_TOK_MEASURE,CMD_TOK_UNKNOWN,-1,0
 				};
 
 static param  cmd_flip_params[] = {{"mode",CMD_TOK_ID,CMD_TOK_UNKNOWN,0,0,NULL}};
-static param cmd_number_params[] = {{"x",CMD_TOK_MEASURE,CMD_TOK_MEASURE,-1,0,NULL},
-				    {"y",CMD_TOK_MEASURE,CMD_TOK_MEASURE,-1,0,NULL},
+static param cmd_number_params[] = {{"x",CMD_TOK_MEASURE,CMD_TOK_MEASURE,0,-1,NULL},
+				    {"y",CMD_TOK_MEASURE,CMD_TOK_MEASURE,0,-1,NULL},
 				    {"start",CMD_TOK_INT,CMD_TOK_INT,1,0,NULL},
 				    {"text",CMD_TOK_STR,CMD_TOK_STR,0,0,NULL},
 				    {"font",CMD_TOK_STR,CMD_TOK_STR,0,0,NULL},
