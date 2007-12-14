@@ -86,7 +86,9 @@ int pages_scaleto(page_list_head * p_doc, dimensions * _paper, double top, doubl
 
 int pages_rotate(page_list_head * p_doc, int angle){	
 	transform_matrix  matrix = {{1,0,0},{0,1,0},{0,0,1}};
+#ifdef MOVE_UP
 	transform_matrix  post_matrix = {{1,0,0},{0,1,0},{0,0,1}};
+#endif
 	int x = p_doc->doc->paper.right.x;
 	int y = p_doc->doc->paper.right.y;
 	update_global_dimensions(p_doc);
