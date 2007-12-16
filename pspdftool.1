@@ -56,6 +56,9 @@ page range from begin of the list
 .TP
 .I -number..number
 page range from end of the list
+.TP
+.I $
+end page in list
 .RE
 .sp
 .| command
@@ -256,6 +259,11 @@ select first five pages and last one from document
 .B select{1..5 -1}
 .sp
 delete last page from document
+.sp
+.ce
+.B select{$..1}
+.sp
+reverse page in list
 .sp
 .ce
 .B apply{-1 del}

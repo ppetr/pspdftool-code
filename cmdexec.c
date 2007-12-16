@@ -36,7 +36,8 @@ enum {  CMD_TOK_UNKNOWN,
 	CMD_TOK_LCPAR,
 	CMD_TOK_RCPAR,
 	CMD_TOK_MINUS,
-	CMD_TOK_MEASURE
+	CMD_TOK_MEASURE,
+	CMD_TOK_DOLLAR
 };
 
 struct id_str{
@@ -345,6 +346,21 @@ static int cmd_sort_range(cmd_page_list_head * sorted,cmd_page_list_head * unsor
 			return -1;
 		}
 		memcpy(pom,it1,sizeof(cmd_page_list));
+
+		if (pom->range[0]==-1){
+			pom->range[0]=pages_count;
+		}
+
+		if (pom->range[1]==-1){
+			pom->range[1]=pages_count;
+		}
+
+		if (pom->range[1]<pom->range[0]){
+			tmp = pom->range[1];
+			pom->range[1] = pom->range[0];
+			pom->range[0] = tmp;
+		}
+
 		if (pom->negativ_range){
 			pom->range[0]=pages_count-pom->range[0] + 1;
 			pom->range[1]=pages_count-pom->range[1] + 1;
@@ -406,11 +422,12 @@ static int cmd_get_pages_args(MYFILE * f, cmd_ent_struct * cmd, cmd_tok_struct *
 					return -1;
 				}
 			case CMD_TOK_INT:
+			case CMD_TOK_DOLLAR:
 				r_begin=r_end=p_tok->number;
 				cmd_get_token(f,p_tok);
 				if (p_tok->token==CMD_TOK_DOTDOT){
 					cmd_get_token(f,p_tok);
-					if (p_tok->token==CMD_TOK_INT){
+					if (p_tok->token==CMD_TOK_INT || p_tok->token==CMD_TOK_DOLLAR){
 						r_end=p_tok->number;
 					}
 					else{
@@ -1064,6 +1081,10 @@ static int cmd_get_token(MYFILE * f,cmd_tok_struct * structure){
 				structure->token=CMD_TOK_UNKNOWN;
 				return -1;
 			}
+		case '$':
+			structure->token=CMD_TOK_DOLLAR;
+			structure->number=-1;
+			return 0;
 		case EOF:
 			structure->token=CMD_TOK_EOF;
 			return -1;
@@ -1202,6 +1223,15 @@ static int cmd_modulo(page_list_head * p_doc, param params[], cmd_page_list_head
 	for (i=0;i<pages_count;i+=modulo){
 		for (ranges=pages->next;ranges!=(cmd_page_list*)pages;ranges=ranges->next){
 			range=pages_list_new(p_doc,0);
+
+			if (ranges->range[0]==-1){
+				ranges->range[0]=modulo;
+			}
+
+			if (ranges->range[1]==-1){
+				ranges->range[1]=modulo;
+			}
+
 			invers = (ranges->range[0]>ranges->range[1]);
 			if (!ranges->negativ_range){
 				new_page=page_num_to_ptn(p_doc, ranges->range[0]+i);
