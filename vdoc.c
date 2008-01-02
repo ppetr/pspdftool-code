@@ -252,7 +252,8 @@ int pages_move_xy(page_list_head * p_doc, double x, double y){
 }
 
 int pages_nup(page_list_head * p_doc,int x,int y, dimensions * bbox,
-	double dx, double dy, int  orientation ,int rotate,int order_by_bbox, int frame, int center){
+	double dx, double dy, int  orientation ,int rotate,
+	int order_by_bbox, int frame, int center,int en_scale){
 	double p_size_x, p_size_y;
 	double n_p_size_x, n_p_size_y;
 	int i,j,k;
@@ -328,7 +329,24 @@ int pages_nup(page_list_head * p_doc,int x,int y, dimensions * bbox,
 	if (rotate){
 		pages_rotate(p_doc,rotate);
 	}
+		
+	if (en_scale == 0) {
+		if (order_by_bbox){
+			p_size_x=(p_doc->doc->bbox.right.x-p_doc->doc->bbox.left.x);		
+			p_size_y=(p_doc->doc->bbox.right.y-p_doc->doc->bbox.left.y);
+		}
+		else{
+			p_size_x=(p_doc->doc->paper.right.x - p_doc->doc->paper.left.x);
+			p_size_y=(p_doc->doc->paper.right.y - p_doc->doc->paper.left.y);
 	
+		}
+		bbox->left.x = 0;
+		bbox->left.y = 0;
+		bbox->right.x =  p_size_x * x + (x-1)*dx;
+		bbox->right.y =  p_size_y * y + (y-1)*dy;
+	
+	}
+
 	n_p_size_x = bbox->right.x-bbox->left.x;
 	n_p_size_y = bbox->right.y-bbox->left.y;
  
@@ -336,17 +354,27 @@ int pages_nup(page_list_head * p_doc,int x,int y, dimensions * bbox,
 	p_size_y = (n_p_size_y - (y-1)*dy)/y;
 	
 	if (order_by_bbox){
-		scale_x=p_size_x/(double)(p_doc->doc->bbox.right.x-p_doc->doc->bbox.left.x);
-		scale_y=p_size_y/(double)(p_doc->doc->bbox.right.y-p_doc->doc->bbox.left.y);
-		scale = min(scale_x,scale_y);
+		if (en_scale){
+			scale_x=p_size_x/(double)(p_doc->doc->bbox.right.x-p_doc->doc->bbox.left.x);
+			scale_y=p_size_y/(double)(p_doc->doc->bbox.right.y-p_doc->doc->bbox.left.y);
+			scale = min(scale_x,scale_y);
+		}
+		else {
+			scale = 1;
+		}
 		p_size_x=scale * (double)(p_doc->doc->bbox.right.x-p_doc->doc->bbox.left.x);
 		p_size_y=scale * (double)(p_doc->doc->bbox.right.y-p_doc->doc->bbox.left.y);
 		pages_move_xy(p_doc, -1 * p_doc->doc->bbox.left.x, -1 * p_doc->doc->bbox.left.y);
 	}
 	else{
-		scale_x=p_size_x/(double)(p_doc->doc->paper.right.x - p_doc->doc->paper.left.x);
-		scale_y=p_size_y/(double)(p_doc->doc->paper.right.y - p_doc->doc->paper.left.y);
-		scale = min(scale_x,scale_y);
+		if (en_scale) {
+			scale_x=p_size_x/(double)(p_doc->doc->paper.right.x - p_doc->doc->paper.left.x);
+			scale_y=p_size_y/(double)(p_doc->doc->paper.right.y - p_doc->doc->paper.left.y);
+			scale = min(scale_x,scale_y);
+		}
+		else {
+			scale = 1;
+		}
 		p_size_x=scale * (double)(p_doc->doc->paper.right.x - p_doc->doc->paper.left.x);
 		p_size_y=scale * (double)(p_doc->doc->paper.right.y - p_doc->doc->paper.left.y);
 		pages_move_xy(p_doc, -1 * p_doc->doc->paper.left.x, -1 * p_doc->doc->paper.left.y);

@@ -19,7 +19,7 @@
 		++_where_;}
 #define get_ids_len(a) (sizeof((a))/sizeof(struct id_str))
 #define STR_MAX 255
-#define PARAM_MAX 10
+#define PARAM_MAX 11
 /*definice typu*/
 /*tokens*/
 enum {  CMD_TOK_UNKNOWN,
@@ -237,7 +237,8 @@ static param cmd_nup_params[] = {{"x",CMD_TOK_INT,CMD_TOK_UNKNOWN,0,0,NULL},
 				 {"by_bbox",CMD_TOK_INT,CMD_TOK_INT,0,0,NULL},
 				 {"paper",CMD_TOK_ID,CMD_TOK_ID,0,0,NULL},
 				 {"frame",CMD_TOK_INT,CMD_TOK_INT,0,0,NULL},
-				 {"center",CMD_TOK_ID,CMD_TOK_ID,0,0,NULL}};
+				 {"center",CMD_TOK_ID,CMD_TOK_ID,0,0,NULL},
+				 {"scale",CMD_TOK_INT,CMD_TOK_INT,1,0,NULL}};
 static param cmd_text_params[] = {{"x",CMD_TOK_MEASURE,CMD_TOK_UNKNOWN,0,0,NULL},
 				 {"y",CMD_TOK_MEASURE,CMD_TOK_UNKNOWN,0,0,NULL},
 				 {"text",CMD_TOK_STR,CMD_TOK_UNKNOWN,0,0,NULL},
@@ -1441,7 +1442,7 @@ static int cmd_orient(page_list_head * p_doc, param params[], cmd_page_list_head
 	return 0;
 }
 static int cmd_nup(page_list_head * p_doc, param params[], cmd_page_list_head * pages){
-	int x,y, orient,rotate,order_bbox,frame, center=1;
+	int x,y, orient,rotate,order_bbox,frame, center=1,scale=1;
 	double dx,dy;
 	dimensions bbox;
 
@@ -1450,6 +1451,7 @@ static int cmd_nup(page_list_head * p_doc, param params[], cmd_page_list_head * 
 	y=params[1].int_number;
 	dx=params[2].real_number;
 	dy=params[3].real_number;
+	scale = params[10].int_number;
 	/*TODO: doresit nastaveni orientace stranky!!!*/
 	if (strcmp(params[4].str,"unknown") == 0){
 		orient=p_doc->doc->orient;
@@ -1465,7 +1467,7 @@ static int cmd_nup(page_list_head * p_doc, param params[], cmd_page_list_head * 
 	rotate=params[5].int_number;
 	order_bbox=params[6].int_number;
 	if (params[7].str==NULL){
-		copy_dimensions(&bbox,&p_doc->doc->paper);	
+		copy_dimensions(&bbox,&p_doc->doc->paper);
 	}
 	else{
 		doc_get_pformat_name_to_dimensions(params[7].str,&bbox);
@@ -1482,7 +1484,7 @@ static int cmd_nup(page_list_head * p_doc, param params[], cmd_page_list_head * 
 		}
 	}
 	
-	return pages_nup(p_doc,x,y,&bbox,dx,dy,orient,rotate,order_bbox,frame, center);
+	return pages_nup(p_doc,x,y,&bbox,dx,dy,orient,rotate,order_bbox,frame, center, scale);
 }
 
 
