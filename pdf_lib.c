@@ -1261,100 +1261,101 @@ static int pdf_page_to_xobj(page_handle * pg_handle){
 	
 	pom=pdf_get_dict_name_value(pg,"Contents");
 	if (pom==NULL){
-		message(FATAL,"The page should have content.\n");
-	}
-	switch (pom->type){
-		case PDF_OBJ_INDIRECT_REF:
-			do{
-				get_object_(contents,p_pdf,pom->val.reference.major,pom->val.reference.minor);
-				pom = contents;
-			} while (contents->type == PDF_OBJ_INDIRECT_REF);
-			if (isStream(contents)){
-				major = stream_to_xobj(p_pdf,contents,pg,NULL);
-				asprintf(&xobjname,"xo%d",revision++);
-				xobj_val = pdf_add_dict_name_value(new_page_xobject,xobjname);
-
-				xobj_val->type = PDF_OBJ_INDIRECT_REF;
-				xobj_val->val.reference.major = major;
-				xobj_val->val.reference.minor = p_pdf->table.table[major].minor;	
-
-				asprintf(&stream_content,"q /%s Do Q",xobjname);
-				free(xobjname);
-				break;
-			}
-			if (!isArray(contents)) {
-				message(FATAL, "I excepting array type, but it isn't.\n");
-			}
-		case PDF_OBJ_ARRAY:
-			{
-				pdf_array * p_array = pom->val.array.next;
-				pdf_object * new_stream;
-				pdf_object * tmp_stream;
-				if (p_array==(pdf_array*)&pom->val.array){
-					asprintf(&stream_content," ");
-					break;
-				}
-				else {
-					major = pdf_decompress_stream(p_pdf,p_array->obj->val.reference.major,p_array->obj->val.reference.minor);
-				}
-				
-				get_object_(new_stream,p_pdf,major,p_pdf->table.table[major].minor);
-				for (p_array=p_array->next;p_array!=(pdf_array*)&pom->val.array;p_array=p_array->next){
-
-					major = pdf_decompress_stream(p_pdf,p_array->obj->val.reference.major,p_array->obj->val.reference.minor);
-					if (major == -1){
-						message(WARN,"I haven't filter for decompress stream,\n I'll convert it to Xobject,"
-							    "but it will not be correct in some cases.\n");
-						goto to_xobj;
-					}
-					get_object_(tmp_stream,p_pdf,major,p_pdf->table.table[major].minor);
-					major = pdf_merge_stream(p_pdf,new_stream,tmp_stream,NULL,NULL," ");
-					get_object_(new_stream,p_pdf,major,p_pdf->table.table[major].minor);
-
-				}
-				major = stream_to_xobj(p_pdf,new_stream,pg,NULL);
-#ifdef HAVE_ZLIB
-				major = pdf_compress_stream(p_pdf,major,p_pdf->table.table[major].minor, "FlateDecode");
-				assert(major!=-1);
-#endif
-				asprintf(&xobjname,"xo%d",revision++);
-				xobj_val = pdf_add_dict_name_value(new_page_xobject,xobjname);
-
-				xobj_val->type = PDF_OBJ_INDIRECT_REF;
-				xobj_val->val.reference.major = major;
-				xobj_val->val.reference.minor = p_pdf->table.table[major].minor;	
-
-				asprintf(&stream_content,"q /%s Do Q",xobjname);
-				free(xobjname);
-
-			}
-			break;
-		to_xobj:
-			{
-				pdf_array * p_array;
-				char * tmp_stream_content;
-				for (p_array=pom->val.array.next;p_array!=(pdf_array*)&pom->val.array;p_array=p_array->next){
-					major = stream_to_xobj(p_pdf,p_array->obj,pg,NULL);
+		asprintf(&stream_content,"q Do Q");
+	} else {
+		switch (pom->type){
+			case PDF_OBJ_INDIRECT_REF:
+				do{
+					get_object_(contents,p_pdf,pom->val.reference.major,pom->val.reference.minor);
+					pom = contents;
+				} while (contents->type == PDF_OBJ_INDIRECT_REF);
+				if (isStream(contents)){
+					major = stream_to_xobj(p_pdf,contents,pg,NULL);
 					asprintf(&xobjname,"xo%d",revision++);
-					pdf_add_dict_name_value(new_page_xobject,xobjname);
 					xobj_val = pdf_add_dict_name_value(new_page_xobject,xobjname);
+
 					xobj_val->type = PDF_OBJ_INDIRECT_REF;
-					
 					xobj_val->val.reference.major = major;
 					xobj_val->val.reference.minor = p_pdf->table.table[major].minor;	
-					if (stream_content == NULL){
-						asprintf(&stream_content," /%s Do ",xobjname);
+
+					asprintf(&stream_content,"q /%s Do Q",xobjname);
+					free(xobjname);
+					break;
+				}
+				if (!isArray(contents)) {
+					message(FATAL, "I excepting array type, but it isn't.\n");
+				}
+			case PDF_OBJ_ARRAY:
+				{
+					pdf_array * p_array = pom->val.array.next;
+					pdf_object * new_stream;
+					pdf_object * tmp_stream;
+					if (p_array==(pdf_array*)&pom->val.array){
+						asprintf(&stream_content," ");
+						break;
 					}
-					else{
-						tmp_stream_content = stream_content;
-						asprintf(&stream_content,"%s q /%s Do Q",tmp_stream_content,xobjname);
-						free(tmp_stream_content);
+					else {
+						major = pdf_decompress_stream(p_pdf,p_array->obj->val.reference.major,p_array->obj->val.reference.minor);
+					}
+					
+					get_object_(new_stream,p_pdf,major,p_pdf->table.table[major].minor);
+					for (p_array=p_array->next;p_array!=(pdf_array*)&pom->val.array;p_array=p_array->next){
+
+						major = pdf_decompress_stream(p_pdf,p_array->obj->val.reference.major,p_array->obj->val.reference.minor);
+						if (major == -1){
+							message(WARN,"I haven't filter for decompress stream,\n I'll convert it to Xobject,"
+								    "but it will not be correct in some cases.\n");
+							goto to_xobj;
+						}
+						get_object_(tmp_stream,p_pdf,major,p_pdf->table.table[major].minor);
+						major = pdf_merge_stream(p_pdf,new_stream,tmp_stream,NULL,NULL," ");
+						get_object_(new_stream,p_pdf,major,p_pdf->table.table[major].minor);
+
+					}
+					major = stream_to_xobj(p_pdf,new_stream,pg,NULL);
+	#ifdef HAVE_ZLIB
+					major = pdf_compress_stream(p_pdf,major,p_pdf->table.table[major].minor, "FlateDecode");
+					assert(major!=-1);
+	#endif
+					asprintf(&xobjname,"xo%d",revision++);
+					xobj_val = pdf_add_dict_name_value(new_page_xobject,xobjname);
+
+					xobj_val->type = PDF_OBJ_INDIRECT_REF;
+					xobj_val->val.reference.major = major;
+					xobj_val->val.reference.minor = p_pdf->table.table[major].minor;	
+
+					asprintf(&stream_content,"q /%s Do Q",xobjname);
+					free(xobjname);
+
+				}
+				break;
+			to_xobj:
+				{
+					pdf_array * p_array;
+					char * tmp_stream_content;
+					for (p_array=pom->val.array.next;p_array!=(pdf_array*)&pom->val.array;p_array=p_array->next){
+						major = stream_to_xobj(p_pdf,p_array->obj,pg,NULL);
+						asprintf(&xobjname,"xo%d",revision++);
+						pdf_add_dict_name_value(new_page_xobject,xobjname);
+						xobj_val = pdf_add_dict_name_value(new_page_xobject,xobjname);
+						xobj_val->type = PDF_OBJ_INDIRECT_REF;
+						
+						xobj_val->val.reference.major = major;
+						xobj_val->val.reference.minor = p_pdf->table.table[major].minor;	
+						if (stream_content == NULL){
+							asprintf(&stream_content," /%s Do ",xobjname);
+						}
+						else{
+							tmp_stream_content = stream_content;
+							asprintf(&stream_content,"%s q /%s Do Q",tmp_stream_content,xobjname);
+							free(tmp_stream_content);
+						}
 					}
 				}
-			}
-			break;
-		default:
-			assert(0);
+				break;
+			default:
+				assert(0);
+		}
 	}
 
 
