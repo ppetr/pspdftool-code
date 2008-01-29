@@ -49,7 +49,7 @@ int dummy_doc_bbox_update(page_list_head * p_doc){
 	dimensions dim;
 	close(fd);
 	pages_list_save(p_doc,filein);
-	asprintf(&cmd," ( gs -sDEVICE=bbox -dQUIET -dNOPAUSE -dBATCH %s )  2>&1 ",filein);
+	asprintf(&cmd," ( gs -sDEVICE=bbox -dQUIET -dNOPAUSE -r100 -dBATCH %s )  2>&1 ",filein);
 	f=popen(cmd,"r");
 	free(cmd);
 	if (f==NULL){
