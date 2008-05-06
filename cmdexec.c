@@ -112,6 +112,8 @@ typedef struct cmd_ent_struct{
 	struct cmd_param_head params;
 	struct cmd_page_list_head range;
 	char cmd_id[STR_MAX];
+	int row;
+	int column;
 }cmd_ent_struct;
 
 typedef struct cmd_ent_struct_head{
@@ -613,7 +615,7 @@ static int cmd_get_args(MYFILE * f, cmd_ent_struct * cmd, cmd_tok_struct * p_tok
 }
 
 
-static cmd_ent_struct * cmd_new_command(cmd_ent_struct_head * cmd_tree, char * cmd_id){
+static cmd_ent_struct * cmd_new_command(cmd_ent_struct_head * cmd_tree, char * cmd_id, int row, int column){
 	cmd_ent_struct * new_cmd = (cmd_ent_struct *) malloc(sizeof(cmd_ent_struct));
 	if (new_cmd == NULL || cmd_tree == NULL ||  cmd_id == NULL ){
 		return NULL;
@@ -625,6 +627,8 @@ static cmd_ent_struct * cmd_new_command(cmd_ent_struct_head * cmd_tree, char * c
 	new_cmd->prev->next=new_cmd;
 	new_cmd->params.next=new_cmd->params.prev=(cmd_param *)(&(new_cmd->params));
 	new_cmd->range.next=new_cmd->range.prev=(cmd_page_list *)(&(new_cmd->range));
+	new_cmd->row = row;
+	new_cmd->column = column;
 	return new_cmd;
 }
 
@@ -632,7 +636,7 @@ static int cmd_make_tree(MYFILE * f, cmd_ent_struct_head * cmd_tree, cmd_tok_str
 	cmd_ent_struct * cmd;
 	cmd_tree->next=cmd_tree->prev=(cmd_ent_struct *)cmd_tree;
 	while((p_tok->token)==CMD_TOK_ID){
-		cmd=cmd_new_command(cmd_tree,p_tok->str);
+		cmd=cmd_new_command(cmd_tree,p_tok->str, p_tok->row, p_tok->column);
 		if ((cmd_get_token(f,p_tok)==-1) || (cmd_get_args(f,cmd,p_tok)==-1)){
 			break;
 		}
@@ -652,7 +656,9 @@ static int cmd_make_tree(MYFILE * f, cmd_ent_struct_head * cmd_tree, cmd_tok_str
 	}
 	else{
 		vdoc_errno=VDOC_ERR_IS_NOT_ID_TOKEN;
-	/*	message(FATAL,"Syntax error at line %d column %d.\n",p_tok->row,p_tok->column);*/
+		if (p_tok->token != CMD_TOK_RCPAR && p_tok->token != CMD_TOK_INT) {
+			message(WARN,"Syntax error at line %d column %d.\n",p_tok->row,p_tok->column);
+		}
 		return -1;
 	}
 }
@@ -666,11 +672,11 @@ int cmd_exec_command_(page_list_head * p_doc,cmd_ent_struct * cmd,int index){
 
 	if (cmd_commands[index].pages==0 && cmd->range.next!=(cmd_page_list*)&cmd->range){
 		/*prikaz obashuje sekci pages, i kdyz by ji nemel obsahovat*/
-		message(FATAL,"Command %s should not contain pages section.\n",cmd_commands[index].str);
+		message(FATAL,"Command %s should not contain pages section, at line %d column %d.\n",cmd_commands[index].str, cmd->row, cmd->column);
 		return -1;
 	}
 	memcpy(params,cmd_commands[index].params,sizeof(param)*params_count);
-	/*nepojmenovane argumenty*/
+	/*unnamed arguments*/
 	for(i=0,argument=cmd->params.next;
 	    argument!=(cmd_param *)(&cmd->params) && i<params_count && argument->name[0]==0;
 	    argument=argument->next,++i)
@@ -683,7 +689,7 @@ int cmd_exec_command_(page_list_head * p_doc,cmd_ent_struct * cmd,int index){
 				}
 				else{
 					/*spatny typ argumentu*/
-					message(FATAL,"Param %d of command %s is incompatible type.\n",i+1,cmd_commands[index].str);
+					message(FATAL,"Param %d of command %s is incompatible type, at line %d column %d.\n",i+1,cmd_commands[index].str, cmd->row, cmd->column);
 					return -1;
 				}
 				break;
@@ -699,7 +705,7 @@ int cmd_exec_command_(page_list_head * p_doc,cmd_ent_struct * cmd,int index){
 						break;
 					default:
 						/*spatny typ argumentu*/
-						message(FATAL,"Param %d of command %s is incompatible type.\n",i+1,cmd_commands[index].str);
+						message(FATAL,"Param %d of command %s is incompatible type,at line %d column %d.\n",i+1,cmd_commands[index].str, cmd->row, cmd->column);
 						return -1;
 				}
 				break;
@@ -716,7 +722,7 @@ int cmd_exec_command_(page_list_head * p_doc,cmd_ent_struct * cmd,int index){
 					break;
 				default:
 						/*spatny typ argumentu*/
-						message(FATAL,"Param %d of command %s is incompatible type.\n",i+1,cmd_commands[index].str);
+						message(FATAL,"Param %d of command %s is incompatible type, at line %d column %d.\n",i+1,cmd_commands[index].str, cmd->row, cmd->column);
 						return -1;
 				}
 				break;
@@ -727,7 +733,7 @@ int cmd_exec_command_(page_list_head * p_doc,cmd_ent_struct * cmd,int index){
 				}
 				else{
 					/*spatny typ argumentu*/
-					message(FATAL,"Param %d of command %s is incompatible type.\n",i+1,cmd_commands[index].str);
+					message(FATAL,"Param %d of command %s is incompatible type, %d:%d.\n",i+1,cmd_commands[index].str, cmd->row, cmd->column);
 					return -1;
 				}
 				break;
@@ -738,7 +744,7 @@ int cmd_exec_command_(page_list_head * p_doc,cmd_ent_struct * cmd,int index){
 				}
 				else{
 					/*spatny typ argumentu*/
-					message(FATAL,"Param %d of command %s is incompatible type.\n",i+1,cmd_commands[index].str);
+					message(FATAL,"Param %d of command %s is incompatible type, %d:%d.\n",i+1,cmd_commands[index].str, cmd->row, cmd->column);
 					return -1;
 				}
 				break;
@@ -754,7 +760,7 @@ int cmd_exec_command_(page_list_head * p_doc,cmd_ent_struct * cmd,int index){
 		for(i=0;i<params_count && strcmp(params[i].name,argument->name)!=0;++i);
 		if (i==params_count){
 			/*neplatne jmeno argumentu*/
-			message(FATAL,"Param \"%s\" is not from command \"%s\".\n",argument->name,cmd_commands[index].str);
+			message(FATAL,"Param \"%s\" is not from command \"%s\", at line %d column %d.\n",argument->name,cmd_commands[index].str, cmd->row, cmd->column);
 			return -1;
 		}
 		switch(params[i].type){
@@ -849,10 +855,10 @@ static int cmd_exec_command(page_list_head * p_doc, cmd_ent_struct * cmd){
 		}
 	}
 	if (fail){
-		message(FATAL,"There were some errors during executing command \"%s\". Check command args.\n",cmd->cmd_id);
+		message(FATAL,"There were some errors during executing command \"%s\". Check command args, at line %d column %d.\n",cmd->cmd_id, cmd->row, cmd->column);
 	}
 	else{
-		message(FATAL,"Unknown command \"%s\".\n",cmd->cmd_id);
+		message(FATAL,"Unknown command \"%s\" at line %d column %d.\n",cmd->cmd_id , cmd->row, cmd->column);
 	}
 	return -1;
 }
@@ -954,6 +960,7 @@ int cmd_exec(page_list_head * p_doc, MYFILE * f){
 		switch(c){\
 			case '\n':\
 				++row;\
+				lastc=column;\
 				column=0;\
 				break;\
 			default:\
@@ -969,18 +976,50 @@ int cmd_exec(page_list_head * p_doc, MYFILE * f){
 			--row;\
 		}
 
-#define set_poz\
+#define set_poz(structure)\
+	{\
 	structure->row=row;\
-	structure->column=column;
+	structure->column=column;\
+	}
+
+//TODO: for debugung purpose, remove it!!
+#if 0
+int _mygetc(MYFILE * f, int i, int j)
+{
+	int c;
+	c = mygetc(f);
+	printf("%d %d  \"%c\"*\n",i, j, c);
+	return c;
+}
+
+#undef mygetc
+
+#define mygetc(a) \
+		 _mygetc(a, __LINE__, column)
+
+void  _myungetc(MYFILE * f, int i, int j)
+{
+	printf("%d %d -*\n",i, j);
+	myungetc(f);
+
+}
+
+#undef myungetc
+
+#define myungetc(a) \
+		 _myungetc(a, __LINE__, column)
+#endif
 
 /**tokenizer for cmdexec parser*/
 static int cmd_get_token(MYFILE * f,cmd_tok_struct * structure){
 	int c,i;
 	static int next_token=CMD_TOK_UNKNOWN;
-	static int column=0, row=1, lastc=0;
+	static int column=0; 
+	static int row=1;
+	static int lastc=0;
 	if (next_token!=CMD_TOK_UNKNOWN){
 		structure->token=next_token;
-		set_poz;
+		set_poz(structure);
 		next_token=CMD_TOK_UNKNOWN;
 		return 0;
 	}
@@ -991,7 +1030,8 @@ static int cmd_get_token(MYFILE * f,cmd_tok_struct * structure){
 		}
 	}
 
-	set_poz;
+	set_poz(structure);
+
 	switch(c){
 		case '{':
 			structure->token=CMD_TOK_LCPAR;
@@ -1053,7 +1093,7 @@ static int cmd_get_token(MYFILE * f,cmd_tok_struct * structure){
 			}
 			if (c!='.'){
 				if (c!=EOF){
-					un_update_poz;
+					//un_update_poz;
 					myungetc(f);
 				}
 				return 0;
@@ -1070,7 +1110,7 @@ static int cmd_get_token(MYFILE * f,cmd_tok_struct * structure){
 					structure->real_number+= ((double)(c - '0'))/frac;
 				}
 				if (c!=EOF){
-					un_update_poz;
+					//un_update_poz;
 					myungetc(f);
 				}
 				return 0;
@@ -1099,7 +1139,7 @@ static int cmd_get_token(MYFILE * f,cmd_tok_struct * structure){
 					++i;
 				}
 				if (c!=EOF){
-					un_update_poz;
+			//		un_update_poz;
 					myungetc(f);
 				}
 				structure->str[i]=0;
