@@ -1,5 +1,5 @@
 PREFIX=${prefix}
-DESTDIR=${PREFIX}/bin
+bindir=${PREFIX}/bin
 mandir=${PREFIX}/share/man
 PROJECT="PSPDFtool"
 PROJECT_DESC="tool for preprinting preparation"
@@ -17,21 +17,21 @@ clean:
 	rm -f *.o .depend pspdftool pspdftool.1.gz
     
 install:all
-	[ -d "${DESTDIR}" ] || mkdir -p ${DESTDIR} > /dev/null
-	[ -d "${mandir}/man1" ] || mkdir -p ${mandir}/man1
-	${INSTALL} -m 755  pspdftool ${DESTDIR}
+	[ -d "${DESTDIR}${bindir}" ] || mkdir -p ${DESTDIR}${bindir} > /dev/null
+	[ -d "${DESTDIR}${mandir}/man1" ] || mkdir -p ${DESTDIR}${mandir}/man1
+	${INSTALL} -m 755  pspdftool ${DESTDIR}${bindir}
 	gzip -c pspdftool.1 > pspdftool.1.gz
-	${INSTALL} -m 644  pspdftool.1.gz ${mandir}/man1
+	${INSTALL} -m 644  pspdftool.1.gz ${DESTDIR}${mandir}/man1
 
 uninstall:
-	rm -f ${DESTDIR}/pspdftool
-	rm -f ${PREFIX}/share/man/man1/pspdftool.1.gz
+	rm -f ${DESTDIR}${bindir}/pspdftool
+	rm -f ${DESRDIR}${mandir}/man1/pspdftool.1.gz
 help:
 	@echo "$(PROJECT) - $(PROJECT_DESC)"
 	@echo
 	@echo "Makefile targets:"
 	@echo "all      : Build everything"
 	@echo "help     : This little text"
-	@echo "install  : Build & Install into ${DESTDIR}/"
+	@echo "install  : Build & Install into ${bindir}/"
 	@echo "clean    : Clean the dirs to be pristine in bondage"
 
