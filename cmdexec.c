@@ -191,6 +191,7 @@ static int cmd_cmarks(page_list_head * p_doc, param params[], cmd_page_list_head
 static int cmd_norm(page_list_head * p_doc, param params[], cmd_page_list_head * pages);
 static int cmd_duplex(page_list_head * p_doc, param params[], cmd_page_list_head * pages);
 static int cmd_matrix(page_list_head * p_doc, param params[], cmd_page_list_head * pages);
+ static int cmd_pinfo(page_list_head * p_doc, param params[], cmd_page_list_head * pages);
 
 static param  cmd_read_params[] = {{"name",CMD_TOK_STR,CMD_TOK_UNKNOWN,0,0,NULL}};
 static param  cmd_write_params[] = {{"name",CMD_TOK_STR,CMD_TOK_UNKNOWN,0,0,NULL}};
@@ -301,6 +302,7 @@ static cmd_entry cmd_commands[]={
 	{"select","",cmd_select,NULL,0,1},
 	{"text","write text to page",cmd_text,fill_params(cmd_text_params),0},
 	{"write","save list to file",cmd_write,fill_params(cmd_write_params),0},
+ 	{"info","print information about each pages",cmd_pinfo,NULL,0,0},
 	{NULL,NULL,0}
 };
 
@@ -1666,4 +1668,8 @@ void cmd_print_info(FILE *f){
 	}
 }
 
+static int cmd_pinfo(page_list_head * p_doc, param params[], cmd_page_list_head * pages) {
+	pages_info(p_doc, stdout);
+	return 0;
+}
 

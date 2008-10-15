@@ -3,6 +3,18 @@
 #include "vdoc.h"
 
 
+int pages_info(page_list_head * p_doc,FILE * f){
+	page_list * page;
+	fprintf(f,"Pages Info:\n\n");
+	for (page=page_next(page_begin(p_doc));page!=page_end(p_doc);page=page_next(page)){
+		fprintf(f, "paper: %5d %5d %5d %5d\n", page->page->paper.left.x,  page->page->paper.left.y, page->page->paper.right.x, page->page->paper.right.y);
+		fprintf(f, "bbox:  %5d %5d %5d %5d\n", page->page->bbox.left.x,  page->page->bbox.left.y, page->page->bbox.right.x, page->page->bbox.right.y);
+	}
+	fprintf(f, "\n");
+	return 0;
+
+}
+
 int pages_transform(page_list_head * p_doc, transform_matrix * matrix){
 	page_list * page;
 	for (page=page_next(page_begin(p_doc));page!=page_end(p_doc);page=page_next(page)){
@@ -593,6 +605,13 @@ int pages_norm(page_list_head * p_doc, int center, int scale, int l_bbox, int g_
 		{
 			double move_x, move_y;
 			transform_matrix  matrix = {{1,0,0},{0,1,0},{0,0,1}};
+			
+			//fix if dimensions are zerro
+			if (isdimzero((page->page->paper)) || isdimzero((page->page->bbox))) {
+				continue;
+			}
+
+
 			if (g_bbox){
 				move_x = p_doc->doc->bbox.left.x;
 				move_y = p_doc->doc->bbox.left.y;

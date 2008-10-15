@@ -78,6 +78,14 @@ void min_coordinates(coordinate * c1, coordinate * c2){
 }
 
 void max_dimensions(dimensions * d1, dimensions *d2){
+	if (isdimzero(*d1)) {
+		copy_dimensions(d1, d2);
+	}
+
+	if (isdimzero(*d2)) {
+		return;
+	}
+
 	max_coordinates(&(d1->right),&(d2->right));		
 	min_coordinates(&(d1->left),&(d2->left));		
 }

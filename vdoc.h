@@ -5,6 +5,7 @@
 #include "doc_type.h"
 #include "page_list.h"
 #include "vldoc.h"
+int pages_info(page_list_head * p_doc,FILE * f);
 int pages_nup(page_list_head * p_doc,int x,int y, dimensions *bbox,double dx, double dy, int  orientation ,int rotate,int order_by_bbox, int frame, int center, int scale);
 int pages_flip(page_list_head * p_doc, int mode1, int mode2);
 int pages_scale(page_list_head * p_doc, double scale);
