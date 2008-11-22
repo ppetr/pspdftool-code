@@ -634,7 +634,7 @@ void doc_get_pformat_name_to_dimensions(char * name, dimensions *dim){
 			return;
 		}
 	}
-	zero_dimensions(&dim);
+	zero_dimensions(dim);
 }
 int doc_get_pformat_name(dimensions * dim){ /*vrati podle rozmeru format papiru (ten nejtesnejsi)*/
 	int kvalita, kvalita_tmp;
