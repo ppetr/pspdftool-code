@@ -1,6 +1,6 @@
 dnl Version informations and initialization.
-AC_INIT(pspdftool,0.02,Ales Snuparek <snuparek@atlas.cz>)
-AM_INIT_AUTOMAKE(pspdftool,0.02)
+AC_INIT(pspdftool,0.03.99,Ales Snuparek <snuparek@atlas.cz>)
+AM_INIT_AUTOMAKE(pspdftool,0.03.99)
 AC_CONFIG_HEADERS(config.h)
 AM_SANITY_CHECK
 
@@ -11,11 +11,11 @@ AC_ARG_ENABLE([debug],
             [debug=$enableval],
             [debug=no])
 
-dnl AC_ARG_ENABLE([rc],
-dnl             [AS_HELP_STRING([--enable-rc],
-dnl               [enables configuration files @<:@default=yes@:>@])],
-dnl             [rc=$enableval],
-dnl             [rc=yes])
+AC_ARG_ENABLE([rc],
+            [AS_HELP_STRING([--enable-rc],
+              [enables configuration files @<:@default=yes@:>@])],
+            [rc=$enableval],
+            [rc=yes])
 
 dnl AC_ARG_ENABLE([doc],
 dnl            [AS_HELP_STRING([--enable-doc],

@@ -24,6 +24,10 @@ typedef struct myfile {
 	unsigned char * end;
 	long pos;
 	int eof;
+	int column;
+	int row;
+	int lastc;
+	int scratch;
 
 }MYFILE;
 

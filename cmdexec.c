@@ -114,12 +114,9 @@ typedef struct cmd_ent_struct{
 	char cmd_id[STR_MAX];
 	int row;
 	int column;
+	int params_count;
 }cmd_ent_struct;
 
-typedef struct cmd_ent_struct_head{
-	struct cmd_ent_struct * next;
-	struct cmd_ent_struct * prev;
-} cmd_ent_struct_head;
 
 typedef struct cmd_page_list{
 	struct cmd_page_list * next;
@@ -138,6 +135,20 @@ typedef struct param{
 	char * str;
 }param;
 
+typedef struct def_list {
+	struct def_list *next;
+	struct def_list *prev;
+	char * name;
+	param * params;
+	int params_count;
+	struct cmd_arg_ent * arg_ent;
+	int arg_ent_count;
+} def_list;
+
+typedef struct def_list_head {
+	struct def_list * next;
+	struct def_list * prev;
+} def_list_head;
 
 /**struktura pro definici prikazu*/
 typedef struct cmd_entry{
@@ -152,6 +163,11 @@ typedef struct cmd_entry{
 struct unit_val_ent {
 	char * name;
 	double value;
+};
+
+struct  cmd_arg_ent {
+	char * part;
+	param * pparam;	
 };
 
 
@@ -191,7 +207,8 @@ static int cmd_cmarks(page_list_head * p_doc, param params[], cmd_page_list_head
 static int cmd_norm(page_list_head * p_doc, param params[], cmd_page_list_head * pages);
 static int cmd_duplex(page_list_head * p_doc, param params[], cmd_page_list_head * pages);
 static int cmd_matrix(page_list_head * p_doc, param params[], cmd_page_list_head * pages);
- static int cmd_pinfo(page_list_head * p_doc, param params[], cmd_page_list_head * pages);
+static int cmd_spaper(page_list_head * p_doc, param params[], cmd_page_list_head * pages);
+static int cmd_pinfo(page_list_head * p_doc, param params[], cmd_page_list_head * pages);
 
 static param  cmd_read_params[] = {{"name",CMD_TOK_STR,CMD_TOK_UNKNOWN,0,0,NULL}};
 static param  cmd_write_params[] = {{"name",CMD_TOK_STR,CMD_TOK_UNKNOWN,0,0,NULL}};
@@ -270,6 +287,10 @@ static param cmd_matrix_params[]   = {{"a",CMD_TOK_REAL,CMD_TOK_UNKNOWN,0,0,NULL
 				      {"e",CMD_TOK_REAL,CMD_TOK_UNKNOWN,0,0,NULL},
 				      {"f",CMD_TOK_REAL,CMD_TOK_UNKNOWN,0,0,NULL}};
 
+static param  cmd_spaper_params[] = {{"name",CMD_TOK_ID,CMD_TOK_UNKNOWN,0,0,NULL},
+				     {"x",CMD_TOK_MEASURE, CMD_TOK_UNKNOWN,0,0,NULL},
+				     {"y",CMD_TOK_MEASURE, CMD_TOK_UNKNOWN,0,0,NULL}};
+
 #define fill_params(p) p,sizeof(p)/sizeof(param)
 /**definice prikazu*/
 static cmd_entry cmd_commands[]={
@@ -302,7 +323,8 @@ static cmd_entry cmd_commands[]={
 	{"select","",cmd_select,NULL,0,1},
 	{"text","write text to page",cmd_text,fill_params(cmd_text_params),0},
 	{"write","save list to file",cmd_write,fill_params(cmd_write_params),0},
- 	{"info","print information about each pages",cmd_pinfo,NULL,0,0},
+	{"spaper","define new paper format",cmd_spaper,fill_params(cmd_spaper_params),0},
+	{"info","print information about each pages",cmd_pinfo,NULL,0,0},
 	{NULL,NULL,0}
 };
 
@@ -313,6 +335,168 @@ static struct unit_val_ent table[] = {
 	{"pt",1},
 	{NULL,0}
 };
+
+static struct def_list_head dlist = {(def_list *)&dlist,(def_list *)&dlist};
+
+static void cmd_add_def(char * name,  param * params, int params_count, struct cmd_arg_ent * arg_ent, int arg_ent_count) {
+	def_list * tmp = (def_list*) malloc(sizeof(def_list));
+	if (tmp == NULL) {
+		vdoc_errno=VDOC_ERR_LIBC;	
+		message(FATAL,"malloc() error");
+		assert(0);
+		return;
+	}
+	assert(tmp!=NULL);
+	tmp->name = name;
+	tmp->params = params;
+	tmp->params_count = params_count;
+	tmp->arg_ent = arg_ent;
+	tmp->arg_ent_count = arg_ent_count;
+	listinsert(tmp, dlist.next);
+	
+}
+
+
+static def_list * cmd_get_def(char *name) {
+	def_list * tmp = dlist.next;
+	for (tmp = dlist.next; tmp!=((def_list *)&dlist); tmp=tmp->next) {
+		if (strcmp(name, tmp->name) == 0) {
+			return tmp;
+		}
+	} 
+	return NULL;
+} 
+
+static cmd_param* cmd_expand_param(cmd_ent_struct * cmd, int param_pos, char * name) {
+	cmd_param * argument;
+	int i;
+	for(argument =cmd->params.next, i=1;i< param_pos && argument!=(cmd_param *)(&cmd->params);
+	    argument=argument->next, ++i) {
+		if (argument->name && name && (strcmp(argument->name, name) == 0)) {
+			return argument;
+		}
+	}
+	if (argument!=(cmd_param *)(&cmd->params)) {
+		return argument;
+	} else {
+		return NULL;
+	}
+}
+
+static void cmd_print_arg(cmd_param * argument, char * buffer, size_t buffer_len) {
+	
+	switch (argument->type) {
+		case CMD_TOK_INT:
+			snprintf(buffer, buffer_len, "%ld", argument->number);
+			break;
+		case CMD_TOK_REAL:
+			snprintf(buffer, buffer_len, "%f", argument->real_number);
+			break;
+		case CMD_TOK_ID:
+			snprintf(buffer, buffer_len, "%s", argument->str);
+			break;
+		case CMD_TOK_STR:
+			snprintf(buffer, buffer_len, "\"%s\"", argument->str);
+			break;
+		case CMD_TOK_MEASURE:
+			snprintf(buffer, buffer_len, "%f", argument->real_number);
+			break;
+		default:
+			assert(0);
+			break;
+
+	}
+		
+}
+
+static void cmd_print_arg_exp (param * argument, char * buffer, size_t buffer_len) {
+	
+	switch (argument->type) {
+		case CMD_TOK_INT:
+			snprintf(buffer, buffer_len, "%ld", argument->int_number);
+			break;
+		case CMD_TOK_REAL:
+			snprintf(buffer, buffer_len, "%f", argument->real_number);
+			break;
+		case CMD_TOK_ID:
+			snprintf(buffer, buffer_len, "%s", argument->str);
+			break;
+		case CMD_TOK_STR:
+			snprintf(buffer, buffer_len, "\"%s\"", argument->str);
+			break;
+		case CMD_TOK_MEASURE:
+			snprintf(buffer, buffer_len, "%f", argument->real_number);
+			break;
+		default:
+			assert(0);
+			break;
+
+	}
+		
+}
+
+
+
+#define BUF_LEN 256
+static int cmd_expand_macro( cmd_ent_struct_head * cmd_tree, def_list * def, cmd_ent_struct * cmd ) {
+	int arg_count = def->arg_ent_count;
+	struct cmd_arg_ent * arg_ent =  def->arg_ent;
+	cmd_param * argument;
+	int param_pos;
+	char buf[BUF_LEN];
+	char * c_buf = NULL;
+	char * tmp_buf;
+	MYFILE * f;
+	cmd_tok_struct tok;
+	int retv;
+
+	int i;
+
+//del me
+	printf("expanding makro ...\n");
+	for (i=0;i<arg_count;++i) {
+		if (arg_ent[i].pparam) {
+			param_pos = arg_ent[i].pparam - def->params + 1;
+			argument = cmd_expand_param(cmd, param_pos, arg_ent[i].pparam->name);
+			if (argument == NULL) {
+				if (arg_ent[i].pparam->type == CMD_TOK_UNKNOWN) {
+					message(WARN,">Command \"def\" has feuew params at line %d column %d.\n",cmd->row,cmd->column);
+					return -1;
+				}
+				cmd_print_arg_exp(arg_ent[i].pparam,buf, BUF_LEN);
+			} else {
+				cmd_print_arg(argument,buf, BUF_LEN);
+			}
+			if (c_buf) {
+				tmp_buf = c_buf;
+				asprintf(&c_buf, "%s%s",tmp_buf, buf);
+				free(tmp_buf);
+			} else {
+				asprintf(&c_buf, "%s", buf);
+				
+			}
+		}
+
+		if (arg_ent[i].part) {
+			if (c_buf) {
+				tmp_buf = c_buf;
+				asprintf(&c_buf, "%s%s",tmp_buf, arg_ent[i].part);
+				free(tmp_buf);
+			} else {
+				asprintf(&c_buf, "%s", arg_ent[i].part);
+				
+			}
+		}
+	}	
+//del me
+	printf("%s\n", c_buf);
+	f = stropen(c_buf);
+	cmd_get_token(f, &tok);
+	retv = cmd_make_tree(f, cmd_tree, &tok);
+	myfclose(f);
+	free(c_buf);
+	return retv;
+}
 
 static double get_unit_val(char * unit){
 	int i;
@@ -326,7 +510,15 @@ static double get_unit_val(char * unit){
 
 static cmd_page_list * cmd_add_range(cmd_ent_struct * cmd, long begin, long end, int negativ_range){
 	cmd_page_list * new_range = (cmd_page_list*) malloc(sizeof(cmd_page_list));
-	if (new_range == NULL || cmd == NULL){
+
+	if (new_range == NULL) {
+		vdoc_errno=VDOC_ERR_LIBC;	
+		message(FATAL,"malloc() error");
+		assert(0);
+		return NULL;
+	}
+
+	if (cmd == NULL){
 		assert(0);
 		return NULL;
 	}
@@ -346,10 +538,14 @@ static int cmd_sort_range(cmd_page_list_head * sorted,cmd_page_list_head * unsor
 	sorted->next=sorted->prev=(cmd_page_list *)sorted;
 	for(it1=unsorted->next;it1!=(cmd_page_list*)unsorted;it1=it1->next){
 		pom=(cmd_page_list *)malloc(sizeof(cmd_page_list));
-		if(pom==0){
+
+		if (pom == NULL) {
+			vdoc_errno=VDOC_ERR_LIBC;	
+			message(FATAL,"malloc() error");
 			assert(0);
 			return -1;
 		}
+		
 		memcpy(pom,it1,sizeof(cmd_page_list));
 
 		if (pom->range[0]==-1){
@@ -458,7 +654,15 @@ static int cmd_get_pages_args(MYFILE * f, cmd_ent_struct * cmd, cmd_tok_struct *
 }
 static cmd_param * cmd_add_param(cmd_ent_struct * cmd, char * p_name){
 	cmd_param * new_param = (cmd_param *)  malloc(sizeof(cmd_param));
-	if (cmd == NULL || new_param==NULL){
+
+	if (new_param == NULL) {
+		vdoc_errno=VDOC_ERR_LIBC;	
+		message(FATAL,"malloc() error");
+		assert(0);
+		return NULL;
+	}
+
+	if (cmd == NULL){
 		assert(0);
 		return NULL;
 	}
@@ -470,6 +674,7 @@ static cmd_param * cmd_add_param(cmd_ent_struct * cmd, char * p_name){
 	new_param->prev=cmd->params.prev;
 	new_param->next->prev=new_param;
 	new_param->prev->next=new_param;
+	++cmd->params_count;
 	return new_param;
 }
 
@@ -619,29 +824,224 @@ static int cmd_get_args(MYFILE * f, cmd_ent_struct * cmd, cmd_tok_struct * p_tok
 
 static cmd_ent_struct * cmd_new_command(cmd_ent_struct_head * cmd_tree, char * cmd_id, int row, int column){
 	cmd_ent_struct * new_cmd = (cmd_ent_struct *) malloc(sizeof(cmd_ent_struct));
-	if (new_cmd == NULL || cmd_tree == NULL ||  cmd_id == NULL ){
+	if (new_cmd == NULL ||  cmd_id == NULL ){
 		return NULL;
 	}
 	strncpy(new_cmd->cmd_id,cmd_id,STR_MAX);
-	new_cmd->next=(cmd_ent_struct *)cmd_tree;
-	new_cmd->prev=cmd_tree->prev;
+	if (cmd_tree != NULL) {
+		new_cmd->next=(cmd_ent_struct *)cmd_tree;
+		new_cmd->prev=cmd_tree->prev;
+	} else {
+		new_cmd->next = new_cmd;
+		new_cmd->prev = new_cmd;
+	}
 	new_cmd->next->prev=new_cmd;
 	new_cmd->prev->next=new_cmd;
 	new_cmd->params.next=new_cmd->params.prev=(cmd_param *)(&(new_cmd->params));
 	new_cmd->range.next=new_cmd->range.prev=(cmd_page_list *)(&(new_cmd->range));
 	new_cmd->row = row;
 	new_cmd->column = column;
+	new_cmd->params_count = 0;
 	return new_cmd;
 }
 
 static int cmd_make_tree(MYFILE * f, cmd_ent_struct_head * cmd_tree, cmd_tok_struct * p_tok){
 	cmd_ent_struct * cmd;
+	def_list * tmp;
+	cmd_ent_struct_head tmp_tree;
 	cmd_tree->next=cmd_tree->prev=(cmd_ent_struct *)cmd_tree;
+	tmp_tree.next=tmp_tree.prev=(cmd_ent_struct *)&tmp_tree;
 	while((p_tok->token)==CMD_TOK_ID){
-		cmd=cmd_new_command(cmd_tree,p_tok->str, p_tok->row, p_tok->column);
+		tmp = cmd_get_def(p_tok->str);	
+		if (strcmp("def", p_tok->str) && tmp == NULL) {
+			cmd=cmd_new_command(cmd_tree,p_tok->str, p_tok->row, p_tok->column);
+		} else {
+			cmd=cmd_new_command(&tmp_tree,p_tok->str, p_tok->row, p_tok->column);
+		}
 		if ((cmd_get_token(f,p_tok)==-1) || (cmd_get_args(f,cmd,p_tok)==-1)){
+			if (tmp) {
+				cmd_expand_macro(cmd_tree, tmp, cmd);
+			}
 			break;
 		}
+
+		if (strcmp("def", cmd->cmd_id)==0) {
+			char * def_name = NULL;
+			char * def_body = NULL;
+			char * arg_name;
+			char * last_cmd;
+			param * params = NULL;
+			cmd_param * argument;
+			struct cmd_arg_ent * arg_ent;
+			int i;
+			int j;
+			int k;
+			int params_count = cmd->params_count - 2;
+			int arg_count = 1;
+			int tmp;
+			assert(cmd->params_count>=0);
+			
+			if (cmd->params_count) {
+				params = malloc(sizeof(param) * params_count);
+
+				if (params == NULL) {
+					vdoc_errno=VDOC_ERR_LIBC;	
+					message(FATAL,"malloc() error");
+					assert(0);
+					return -1;
+				}
+			}
+
+			for(i=0,argument=cmd->params.next;
+			    argument!=(cmd_param *)(&cmd->params) &&  argument->name[0]==0;
+			    argument=argument->next,++i) {
+				switch (i) {
+					case 0:
+						if (argument->type==CMD_TOK_STR || argument->type==CMD_TOK_ID) {
+							asprintf(&def_name, "%s", argument->str);
+						} else {
+							message(WARN,"Param \"name\" in command \"def\" must be ID or str  at line %d column %d.\n",cmd->row,cmd->column);
+							return -1;
+						}
+						break;
+					case 1:
+						if (argument->type==CMD_TOK_STR || argument->type==CMD_TOK_ID) {
+							def_body = argument->str;
+						} else {
+							message(WARN,"Param \"body\" in command \"def\" must be ID or str  at line %d column %d.\n",cmd->row,cmd->column);
+							return -1;
+						}
+						break;
+					case 2:
+					default:
+						params[i-2].type =  CMD_TOK_UNKNOWN;
+						switch (argument->type) {
+							case CMD_TOK_STR:
+							case CMD_TOK_ID:
+								asprintf(&(params[i-2].name), "%s", argument->str);
+								break;
+							default:
+								message(WARN,"Command \"def\" has wrong param type at line %d column %d.\n",cmd->row,cmd->column);
+								return -1;
+
+						}
+						break;
+				}
+			}
+
+			for(;argument!=(cmd_param *)(&cmd->params) &&  argument->name[0]!=0;
+			    argument=argument->next, ++i)
+			{
+				params[i-2].type =  argument->type;
+				asprintf(&(params[i-2].name), "%s", argument->name);
+				switch (argument->type) {
+					case CMD_TOK_INT:
+						params[i-2].int_number = argument->number;
+						break;
+					case CMD_TOK_REAL:
+						params[i-2].real_number = argument->real_number;
+						break;
+					case CMD_TOK_STR:
+					case CMD_TOK_ID:
+						asprintf(&(params[i-2].str), "%s", argument->str);
+						break;
+					default:
+						assert(0);
+						return -1;
+
+				}
+
+			}
+			if (argument!=(cmd_param *)(&cmd->params)) {
+				message(WARN,"Command has unnamed args after named args at line %d column %d\n",cmd->row, cmd->column);
+				return -1;
+			}
+
+			if (i<2) {
+				message(WARN,"Command \"def\" has feuew params at line %d column %d.\n",cmd->row,cmd->column);
+				return -1;
+			}
+			for (i=0;def_body[i] != 0;++i) {
+				if (def_body[i]=='$') {
+					++arg_count;
+				}
+				if (def_body[i] == '\\' && def_body[i+1] != 0){
+					++i;
+				}
+			}
+			arg_ent = (struct cmd_arg_ent *)  malloc(sizeof(struct cmd_arg_ent) * arg_count);
+
+			if (arg_ent == NULL) {
+				vdoc_errno=VDOC_ERR_LIBC;	
+				message(FATAL,"malloc() error");
+				assert(0);
+				return -1;
+			}
+			last_cmd = def_body;
+			j = 0;
+			arg_ent[j].part = NULL;
+			arg_ent[j].pparam = NULL;
+			for (i=0;def_body[i] != 0;++i) {
+				if (def_body[i]=='$') {
+					tmp = def_body[i];
+					def_body[i] = 0;
+					asprintf(&arg_ent[j].part,"%s", last_cmd);
+					def_body[i] = tmp;
+					++j;
+					++i;
+					arg_name = def_body + i;
+					while (isalnum(def_body[i])) {
+						++i;
+					}
+					tmp = def_body[i];
+					def_body[i] = 0;
+					arg_ent[j].pparam = NULL;
+					
+					for (k=0;k<params_count;++k) {
+						if (params[k].name &&  strcmp(arg_name, params[k].name) == 0) {
+							arg_ent[j].pparam = params + k;
+							break;
+						}
+					}					
+
+					if (arg_ent[j].pparam == NULL) {
+						message(WARN,"In command \"def\" param \"%s\"  isn't declared at line %d column %d.\n", arg_name, cmd->row,cmd->column);
+						return -1;
+					}
+
+					def_body[i] = tmp;
+					last_cmd = def_body + i;	
+					--i;
+				}
+				if (def_body[i] == '\\' && def_body[i+1] != 0){
+					++i;
+				}
+			}
+
+			if (strlen(last_cmd)) {
+				asprintf(&arg_ent[j].part,"%s", last_cmd);
+				//arg_ent[j].pparam = NULL;
+			}
+#if 0			
+			printf("user defined command \"%s\"\n", def_name);
+			printf("body %s\n", def_body);
+			printf("params count: %d\n", params_count);
+			for (i=0;i<arg_count;++i) {
+				if (arg_ent[i].part)
+					printf(">>%s\n",arg_ent[i].part); 
+				if (arg_ent[i].pparam) {
+					printf(" <$$> ");
+				}
+			}
+			
+			printf("def isn't implemented yet ...\n");
+#endif
+			cmd_add_def(def_name, params, params_count, arg_ent, arg_count);
+			continue;
+		} else if (tmp) {
+			cmd_expand_macro(cmd_tree, tmp, cmd);
+		}
+
 		if (strcmp("new",cmd->cmd_id)==0){
 			if (cmd_get_pages_args_cmd_new(f,cmd,p_tok)==-1){
 				break;
@@ -653,6 +1053,7 @@ static int cmd_make_tree(MYFILE * f, cmd_ent_struct_head * cmd_tree, cmd_tok_str
 			}
 		}
 	}
+	cmd_free_tree(&tmp_tree);
 	if (p_tok->token==CMD_TOK_EOF){
 		return 0;
 	}
@@ -665,7 +1066,7 @@ static int cmd_make_tree(MYFILE * f, cmd_ent_struct_head * cmd_tree, cmd_tok_str
 	}
 }
 
-int cmd_exec_command_(page_list_head * p_doc,cmd_ent_struct * cmd,int index){
+static int cmd_exec_command_(page_list_head * p_doc,cmd_ent_struct * cmd,int index, int test){
 	int i;
 	int params_count=cmd_commands[index].params_count;
 	cmd_param * argument;
@@ -673,7 +1074,7 @@ int cmd_exec_command_(page_list_head * p_doc,cmd_ent_struct * cmd,int index){
 	assert(PARAM_MAX>=cmd_commands[index].params_count);
 
 	if (cmd_commands[index].pages==0 && cmd->range.next!=(cmd_page_list*)&cmd->range){
-		/*prikaz obashuje sekci pages, i kdyz by ji nemel obsahovat*/
+		/*command contain section pages, but it should not have it*/
 		message(FATAL,"Command %s should not contain pages section, at line %d column %d.\n",cmd_commands[index].str, cmd->row, cmd->column);
 		return -1;
 	}
@@ -690,7 +1091,7 @@ int cmd_exec_command_(page_list_head * p_doc,cmd_ent_struct * cmd,int index){
 					params[i].int_number=argument->number;
 				}
 				else{
-					/*spatny typ argumentu*/
+					/*bad argument type*/
 					message(FATAL,"Param %d of command %s is incompatible type, at line %d column %d.\n",i+1,cmd_commands[index].str, cmd->row, cmd->column);
 					return -1;
 				}
@@ -706,7 +1107,7 @@ int cmd_exec_command_(page_list_head * p_doc,cmd_ent_struct * cmd,int index){
 						params[i].real_number=argument->real_number;
 						break;
 					default:
-						/*spatny typ argumentu*/
+						/*bad argument type*/
 						message(FATAL,"Param %d of command %s is incompatible type,at line %d column %d.\n",i+1,cmd_commands[index].str, cmd->row, cmd->column);
 						return -1;
 				}
@@ -723,7 +1124,7 @@ int cmd_exec_command_(page_list_head * p_doc,cmd_ent_struct * cmd,int index){
 						params[i].real_number=argument->real_number;
 					break;
 				default:
-						/*spatny typ argumentu*/
+						/*bad argument type*/
 						message(FATAL,"Param %d of command %s is incompatible type, at line %d column %d.\n",i+1,cmd_commands[index].str, cmd->row, cmd->column);
 						return -1;
 				}
@@ -734,7 +1135,7 @@ int cmd_exec_command_(page_list_head * p_doc,cmd_ent_struct * cmd,int index){
 					params[i].str=argument->str;
 				}
 				else{
-					/*spatny typ argumentu*/
+					/*bad argument type*/
 					message(FATAL,"Param %d of command %s is incompatible type, %d:%d.\n",i+1,cmd_commands[index].str, cmd->row, cmd->column);
 					return -1;
 				}
@@ -745,7 +1146,7 @@ int cmd_exec_command_(page_list_head * p_doc,cmd_ent_struct * cmd,int index){
 					params[i].str=argument->str;
 				}
 				else{
-					/*spatny typ argumentu*/
+					/*bad argument type*/
 					message(FATAL,"Param %d of command %s is incompatible type, %d:%d.\n",i+1,cmd_commands[index].str, cmd->row, cmd->column);
 					return -1;
 				}
@@ -772,7 +1173,7 @@ int cmd_exec_command_(page_list_head * p_doc,cmd_ent_struct * cmd,int index){
 					params[i].int_number=argument->number;
 				}
 				else{
-					/*spatny typ argumentu*/
+					/*bad argument type*/
 					return -1;
 				}
 				break;
@@ -787,7 +1188,7 @@ int cmd_exec_command_(page_list_head * p_doc,cmd_ent_struct * cmd,int index){
 						params[i].real_number=argument->real_number;
 						break;
 					default:
-					/*spatny typ argumentu*/
+					/*bad argument type*/
 						return -1;
 				}
 				break;
@@ -803,7 +1204,7 @@ int cmd_exec_command_(page_list_head * p_doc,cmd_ent_struct * cmd,int index){
 						params[i].real_number=argument->real_number;
 					break;
 				default:
-					/*spatny typ argumentu*/
+					/*bad argument type*/
 						return -1;
 				}
 				break;
@@ -813,7 +1214,7 @@ int cmd_exec_command_(page_list_head * p_doc,cmd_ent_struct * cmd,int index){
 					params[i].str=argument->str;
 				}
 				else{
-					/*spatny typ argumentu*/
+					/*bad argument type*/
 					return -1;
 				}
 				break;
@@ -823,7 +1224,7 @@ int cmd_exec_command_(page_list_head * p_doc,cmd_ent_struct * cmd,int index){
 					params[i].str=argument->str;
 				}
 				else{
-					/*spatny typ argumentu*/
+					/*bad argument type*/
 					return -1;
 				}
 				break;
@@ -833,24 +1234,28 @@ int cmd_exec_command_(page_list_head * p_doc,cmd_ent_struct * cmd,int index){
 	}
 
 	if (argument!=(cmd_param *)(&cmd->params)){
-		/*spatne argumenty*/
+		/*bad arguments*/
 		return -1;
 	}
 	for(i=0;i<params_count;++i){
 		if (params[i].value==CMD_TOK_UNKNOWN){
-			/*parament i mel byt vyplnen*/
+			/*value should be set*/
 			return -1;
 		}
 	}
-	return cmd_commands[index].proc(p_doc,params,&cmd->range);
+	if (test) {
+		return 0;
+	} else {
+		return cmd_commands[index].proc(p_doc,params,&cmd->range);
+	}
 }
 
-static int cmd_exec_command(page_list_head * p_doc, cmd_ent_struct * cmd){
+static int cmd_exec_command(page_list_head * p_doc, cmd_ent_struct * cmd, int test){
 	int index;
 	int fail = 0;
 	for(index=0;cmd_commands[index].str;++index){
 		if(strcmp(cmd_commands[index].str,cmd->cmd_id)==0){
-			if(cmd_exec_command_(p_doc,cmd,index)==0){
+			if(cmd_exec_command_(p_doc,cmd,index, test)==0){
 				return 0;
 			}
 			fail = 1;
@@ -865,11 +1270,11 @@ static int cmd_exec_command(page_list_head * p_doc, cmd_ent_struct * cmd){
 	return -1;
 }
 
-static int cmd_exec_tree(page_list_head * p_doc,cmd_ent_struct_head * cmd_tree){
+static int cmd_exec_tree(page_list_head * p_doc,cmd_ent_struct_head * cmd_tree, int test){
 	cmd_ent_struct  * pom=cmd_tree->next;
 	cmd_ent_struct * end=pom->prev;
 	while (pom!=end){
-		if (cmd_exec_command(p_doc,pom)==-1){
+		if (cmd_exec_command(p_doc,pom,test)==-1){
 			return -1;
 		}
 		pom=pom->next;
@@ -939,21 +1344,24 @@ static void cmd_free_tree(cmd_ent_struct_head * cmd_tree){
 	return;
 }
 
-int cmd_exec(page_list_head * p_doc, MYFILE * f){
+int cmd_preexec(cmd_ent_struct_head * cmd_tree, MYFILE * f){
 	cmd_tok_struct token;
-	cmd_ent_struct_head cmd_tree;
 	cmd_get_token(f,&token);
-	if (cmd_make_tree(f,&cmd_tree,&token)==-1){
-		cmd_free_tree(&cmd_tree);
+	if (cmd_make_tree(f,cmd_tree,&token)==-1 || cmd_exec_tree(NULL,cmd_tree, 1)==-1){
+		cmd_free_tree(cmd_tree);
 		message(FATAL,"There were some errors during parsing commands\n");
 		return -1;
 	}
-	if (cmd_exec_tree(p_doc,&cmd_tree)==-1){
-		cmd_free_tree(&cmd_tree);
+	return 0;
+}
+
+int cmd_exec(page_list_head * p_doc, cmd_ent_struct_head * cmd_tree ,MYFILE * f){
+	if (cmd_exec_tree(p_doc,cmd_tree, 0)==-1){
+		cmd_free_tree(cmd_tree);
 		message(FATAL,"There were some errors during executing commands\n");
 		return -1;
 	}
-	cmd_free_tree(&cmd_tree);
+	cmd_free_tree(cmd_tree);
 	return 0;
 	
 }
@@ -961,27 +1369,27 @@ int cmd_exec(page_list_head * p_doc, MYFILE * f){
 #define update_poz\
 		switch(c){\
 			case '\n':\
-				++row;\
-				lastc=column;\
-				column=0;\
+				++(*row);\
+				*lastc=*column;\
+				(*column)=0;\
 				break;\
 			default:\
-				lastc=column;\
-				++column;\
+				(*lastc)=(*column);\
+				++*(column);\
 		}
 
 #define un_update_poz\
-		if (column){\
-			--column;\
+		if (*column){\
+			--(*column);\
 		}else{\
-			column=lastc;\
-			--row;\
+			(*column)=(*lastc);\
+			--(*row);\
 		}
 
 #define set_poz(structure)\
 	{\
-	structure->row=row;\
-	structure->column=column;\
+	structure->row=*row;\
+	structure->column=*column;\
 	}
 
 //TODO: for debugung purpose, remove it!!
@@ -1012,17 +1420,18 @@ void  _myungetc(MYFILE * f, int i, int j)
 		 _myungetc(a, __LINE__, column)
 #endif
 
+
 /**tokenizer for cmdexec parser*/
 static int cmd_get_token(MYFILE * f,cmd_tok_struct * structure){
 	int c,i;
-	static int next_token=CMD_TOK_UNKNOWN;
-	static int column=0; 
-	static int row=1;
-	static int lastc=0;
-	if (next_token!=CMD_TOK_UNKNOWN){
-		structure->token=next_token;
+	int * column = &f->column; 
+	int * row = &f->row;
+	int * lastc = &f->lastc;
+	int * next_token=&f->scratch;
+	if (*next_token!=CMD_TOK_UNKNOWN){
+		structure->token=*next_token;
 		set_poz(structure);
-		next_token=CMD_TOK_UNKNOWN;
+		*next_token=CMD_TOK_UNKNOWN;
 		return 0;
 	}
 	while ((c=mygetc(f))!=EOF){
@@ -1118,7 +1527,7 @@ static int cmd_get_token(MYFILE * f,cmd_tok_struct * structure){
 				return 0;
 			}else{
 				if (c=='.'){
-					next_token=CMD_TOK_DOTDOT;
+					*next_token=CMD_TOK_DOTDOT;
 					return 0;
 				}
 				structure->token=CMD_TOK_UNKNOWN;
@@ -1290,14 +1699,14 @@ static int cmd_modulo(page_list_head * p_doc, param params[], cmd_page_list_head
 				return -1;
 			}
 
-			/*zkopirovani seznamu stranek do noveho seznamu*/
+			/*duplicate page list*/
 			for(;new_page!=page_end;new_page=invers?page_prev(new_page):page_next(new_page)){
 				pages_list_add_page(range, page_new(new_page,0),pg_add_end);
 			}
 			pages_list_add_page(range, page_new(new_page,0),pg_add_end);
 			
 
-			if (cmd_exec_tree(range, &(ranges->commands))==-1){
+			if (cmd_exec_tree(range, &(ranges->commands), 0)==-1){
 				return -1;
 			}
 			pages_list_cat(new,range);
@@ -1346,7 +1755,7 @@ static int cmd_apply(page_list_head * p_doc, param params[], cmd_page_list_head 
 		selected.next->prev=(page_list*)&selected;
 		selected.prev->next=(page_list*)&selected;
 	
-		if (cmd_exec_tree(&selected, &(range->commands))==-1){
+		if (cmd_exec_tree(&selected, &(range->commands), 0)==-1){
 			return -1;
 		}
 		/*TODO: odstranit zbytecne kopirovani seznamu*/
@@ -1371,7 +1780,7 @@ static int cmd_new(page_list_head * p_doc, param params[], cmd_page_list_head * 
 	new_list=pages_list_new(p_doc,0);
 	pages_list_add_page(new_list,page_new_ext(NULL,p_doc->doc->type,p_doc->doc),pg_add_end);	
 	if (cmds->commands.next!=NULL){ 
-		if (cmd_exec_tree(new_list, &(cmds->commands))==-1){
+		if (cmd_exec_tree(new_list, &(cmds->commands),0)==-1){
 			return -1;
 		}
 	}
@@ -1572,10 +1981,12 @@ static int cmd_move(page_list_head * p_doc, param params[], cmd_page_list_head *
 static int cmd_duplex(page_list_head * p_doc, param params[], cmd_page_list_head * pages){
 	char cmds[] = " modulo(2,0){ 1 2 rotate(180) }"; 
 	MYFILE * f;
+	cmd_ent_struct_head cmd_ent;
 /*TODO: add api to vdoc for working with duplex*/
 	if (params[0].int_number){
 		f = stropen(cmds);
-		assert(cmd_exec(p_doc, f)==0);
+		assert(cmd_preexec(&cmd_ent, f));
+		assert(cmd_exec(p_doc, &cmd_ent, f)==0);
 		myfclose(f);
 	}
 	return 0;
@@ -1595,6 +2006,13 @@ static int cmd_matrix(page_list_head * p_doc, param params[], cmd_page_list_head
 	matrix[2][2] = 1;
 	return pages_transform(p_doc, &matrix);
 }
+
+static int cmd_spaper(page_list_head * p_doc, param params[], cmd_page_list_head * pages) {
+	doc_set_pformat_dimensions(params[0].str, params[1].real_number, params[2].real_number);	
+	return 0;
+}
+
+
 void cmd_print_info(FILE *f){
 	int i=0;
 	int j;

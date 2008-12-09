@@ -5,6 +5,8 @@ man_MANS = pspdftool.1x
 
 bin_PROGRAMS = pspdftool
 
+EXTRA_DIST = pspdftool.1x
+
 AM_CFLAGS = @DEBUG@ -std=gnu99
 
 doc_DATA = AUTHORS README INSTALL COPYING @DEVEL@

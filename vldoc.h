@@ -147,6 +147,7 @@ page_handle * new_page_handle(page_handle * p1);
 page_handle * page_handle_new_ext(page_handle * p_handle, int type, doc_handle * doc);
 page_handle * page_handle_copy_w_ext(page_handle * p_handle, doc_handle * doc);
 int doc_update_bbox(page_list_head * handle);
+void doc_set_pformat_dimensions(char * name, int x, int y);
 
 
 /*-ostatni "pomocne" funkce*/

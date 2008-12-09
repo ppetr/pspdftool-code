@@ -8,9 +8,12 @@
 #include "vdoc.h"
 #include "cmdexec.h"
 
-#define RELEASE 0
-#define PATCHLEVEL 2
-#define STD_IN_OUT 1
+#define STD_IN_OUT 		1
+
+#ifdef ENABLE_RC
+	#define PSPDFTOOL_RC		".pspdftoolrc"
+	#define PSPDFTOOL_RC_ETC	"/etc/pspdftoolrc"
+#endif
 
 struct conf {
 	int           infile;
@@ -51,7 +54,7 @@ static void
 print_help(FILE * stream, int exit_code)
 {
 	size_t          i;
-	fprintf(stream, "pspdftool %d.%02d\n", RELEASE, PATCHLEVEL);
+	fprintf(stream, "pspdftool %s\n", PACKAGE_VERSION);
 	for (i = 0; i < sizeof(pusage) / LLEN; ++i){
 		fprintf(stream, "%s\n", pusage[i]);
 	}
@@ -170,7 +173,15 @@ int file_exist(const char * name){
 
 int main(int argc, char *argv[]){
 	struct conf conf;
+	cmd_ent_struct_head cmd_tree;
 	MYFILE * commands;
+#ifdef ENABLE_RC
+	MYFILE * commands_rc = NULL;
+	MYFILE * commands_rc_etc = NULL;
+	char path[PATH_MAX];
+	cmd_ent_struct_head cmd_tree_rc;
+	cmd_ent_struct_head cmd_tree_rc_etc;
+#endif
 	page_list_head * p_doc=NULL;
 	char filein[]=".tmp.XXXXXXXX";
 	int result;
@@ -178,6 +189,40 @@ int main(int argc, char *argv[]){
 	signal(SIGBUS,sig_handler);
 	atexit(doc_free_format);
 	parseargs(argc, argv, &conf);
+
+	if (conf.f_cmd){
+		commands = myfopen(conf.f_cmd,"rt");
+	}
+	else{
+		commands = stropen(conf.commands);
+	}
+#ifdef ENABLE_RC
+	snprintf(path, PATH_MAX, "%s/%s", getenv("HOME"), PSPDFTOOL_RC);
+	if (file_exist(path)) {
+		commands_rc = myfopen(path, "rt");
+	}
+	if (file_exist(PSPDFTOOL_RC_ETC)) {
+		commands_rc_etc = myfopen(PSPDFTOOL_RC_ETC, "rt");
+	}
+
+	if (commands_rc_etc != NULL) {
+		if (cmd_preexec(&cmd_tree_rc_etc, commands_rc_etc) == -1) {
+			return -1;
+		}
+	}
+
+	if (commands_rc != NULL) {
+		if (cmd_preexec(&cmd_tree_rc, commands_rc) == -1) {
+			return -1;
+		}
+	}
+#endif
+	if (commands != NULL) {
+		if (cmd_preexec(&cmd_tree, commands) == -1) {
+			return -1;
+		}
+	}
+
 	if (conf.infile != -1){
 		if (conf.infile==-2 || (strcmp(argv[conf.infile],"-")==0)){
 			char BUFFER[1024];
@@ -200,6 +245,8 @@ int main(int argc, char *argv[]){
 			}
 		}
 	}
+
+
 
 	if (conf.infile!=-1){
 		p_doc=pages_list_open((conf.infile==-2 || (argv[conf.infile][0]=='-'))?filein:argv[conf.infile]);
@@ -230,17 +277,34 @@ int main(int argc, char *argv[]){
 			message(FATAL,"I cannot cat this file \"%s\".\n",argv[i]);
 		}
 	}
-	if (conf.f_cmd){
-		commands = myfopen(conf.f_cmd,"rt");
-	}
-	else{
-		commands = stropen(conf.commands);
-	}
+
 	if (commands==NULL){
 		pages_list_delete(p_doc);
 		return -1;
 	}
-	result=cmd_exec(p_doc,commands);
+#ifdef ENABLE_RC
+	if (commands_rc_etc != NULL) {
+		result=cmd_exec(p_doc, &cmd_tree_rc_etc, commands_rc_etc);
+		myfclose(commands_rc_etc);
+		if (result == -1){
+		/**error*/
+			pages_list_delete(p_doc);
+		return -1;
+		}
+	}
+
+	if (commands_rc != NULL) {
+		result=cmd_exec(p_doc, &cmd_tree_rc, commands_rc);
+		myfclose(commands_rc);
+		if (result == -1){
+		/**error*/
+			pages_list_delete(p_doc);
+		return -1;
+		}
+	}
+#endif
+
+	result=cmd_exec(p_doc, &cmd_tree, commands);
 	myfclose(commands);
 	if (result == -1){
 		/**error*/

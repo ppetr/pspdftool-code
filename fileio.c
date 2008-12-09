@@ -42,6 +42,10 @@ MYFILE * stropen(const char * str){
 		vdoc_errno=VDOC_ERR_LIBC;
 		return NULL;
 	}
+	f->row = 1;
+	f->column = 0;
+	f->scratch = 0;
+	f->lastc = 0;
 	len=strlen(str);
 	f->buf=(unsigned char *)malloc(sizeof(unsigned char) * (len+1));
 	if (f->buf==NULL){

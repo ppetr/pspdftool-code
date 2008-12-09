@@ -10,7 +10,7 @@
 	# define M_PI		3.14159265358979323846	/* pi */
 #endif
 /*v pripade ze neexistuje funkce, zavolat prislusnou dummy funkci*/
-#define callfunc(name,p_doc)                                  \
+#define callfunc(name,p_doc)							\
 	func_implement_array.functions[                                        \
 	     ( ((p_doc)->type < func_implement_array.size)                     \
 	       && ((p_doc)->type > 0)                                          \
@@ -30,7 +30,7 @@ typedef struct dimensions_ent{
 /* list of paper sizes supported */
 /* sizes are points (72 * sizes in inch=2.54cm) */
 /*static Paper papersizes[] = {*/
-static dimensions_ent doc_page_sizes[]= {
+static dimensions_ent _doc_page_sizes[]= {
    { "a0", {2382, 3369 }},    /* 84.1cm * 118.8cm */
    { "a1", {1684, 2382 }},    /* 59.4cm * 84.1cm */
    { "a2", {1191, 1684 }},    /* 42cm * 59.4cm */
@@ -128,6 +128,10 @@ static dimensions_ent doc_page_sizes[]= {
    { "halfletter", {396, 612 }}, /* 5.5in * 8.5in */
    { NULL, {0, 0 }}
 };
+
+static dimensions_ent * doc_page_sizes = NULL;
+static int doc_page_sizes_len = 0;
+static int doc_page_sizes_end = 0;
 
 static int doc_page_transform_(page_list * pg_handle);
 static int doc_apply_page_transform(page_list_head * p_doc);
@@ -601,7 +605,65 @@ int doc_page_crop(page_list * pg_handle, dimensions * dimensions){   /*orizne st
 int doc_update_bbox(page_list_head * handle){
 	return callfunc(update_bbox,handle->doc)(handle);
 }
+
+static void doc_init_pformat_dimensions(void) {
+	if (doc_page_sizes == NULL) {
+		doc_page_sizes_len = sizeof(_doc_page_sizes) / sizeof(dimensions_ent);
+		doc_page_sizes_end = doc_page_sizes_len -2;
+		doc_page_sizes  = (dimensions_ent *)  malloc(doc_page_sizes_len * sizeof(dimensions));	
+		if (doc_page_sizes == NULL) {
+			message(FATAL, "malloc :: fail ()");
+		}
+		memcpy(doc_page_sizes, _doc_page_sizes, sizeof(_doc_page_sizes));
+
+	}
+}
+
+void doc_set_pformat_dimensions(char * name, int x, int y) {
+	int new_size;
+	dimensions_ent * new_arr;
+	int i;
+	doc_init_pformat_dimensions();
+	name=skipwhspaces(name);
+	{/*pouze jedno slovo*/
+		char * pom = name;
+		while (*pom && !isspace((int)(*pom))){
+			++pom;
+		}
+		*pom=0;
+	}
+	name=strlower(name);
+
+	for (i=0;doc_page_sizes[i].str_name!=NULL;++i){
+		if (strcmp(doc_page_sizes[i].str_name,name)==0){
+			doc_page_sizes[i].dimensions.x = x;
+			doc_page_sizes[i].dimensions.y = y;
+			return;
+		}
+	}
+
+
+
+	if (doc_page_sizes_end +2 == doc_page_sizes_len) {
+		new_size = doc_page_sizes_len + 5;
+		new_arr = realloc (doc_page_sizes, new_size * sizeof(dimensions));
+		if (new_arr == NULL) {
+			return;
+		}
+		doc_page_sizes = new_arr;
+		doc_page_sizes_len = new_size;
+	}
+	asprintf(&(doc_page_sizes[doc_page_sizes_end].str_name), "%s", name);
+	doc_page_sizes[doc_page_sizes_end].dimensions.x = x;
+	doc_page_sizes[doc_page_sizes_end].dimensions.y = y;
+	++doc_page_sizes_end;
+	doc_page_sizes[doc_page_sizes_end].str_name = NULL;
+	doc_page_sizes[doc_page_sizes_end].dimensions.x = 0;
+	doc_page_sizes[doc_page_sizes_end].dimensions.y = 0;
+}
+
 int doc_get_pformat_dimensions(int p_size,dimensions * dim){  /*vrati rozmery formatu papiru (A4 ...)*/
+	doc_init_pformat_dimensions();
 	dim->right.x=doc_page_sizes[p_size].dimensions.x;
 	dim->right.y=doc_page_sizes[p_size].dimensions.y;
 	dim->left.x=dim->left.y=0;
@@ -612,12 +674,14 @@ int doc_get_pformat_dimensions(int p_size,dimensions * dim){  /*vrati rozmery fo
 #define doc_pformat_quality(x,y,fx,fy) ((x<=fx && y<=fy)? (fx-x) + (fy-y):-1)	
 
 char * dimensions_str(int i){
+	doc_init_pformat_dimensions();
 	return doc_page_sizes[i].str_name;
 }
 
 
 void doc_get_pformat_name_to_dimensions(char * name, dimensions *dim){
 	int i;
+	doc_init_pformat_dimensions();
 	name=skipwhspaces(name);
 	{/*pouze jedno slovo*/
 		char * pom = name;
@@ -639,6 +703,7 @@ void doc_get_pformat_name_to_dimensions(char * name, dimensions *dim){
 int doc_get_pformat_name(dimensions * dim){ /*vrati podle rozmeru format papiru (ten nejtesnejsi)*/
 	int kvalita, kvalita_tmp;
 	int i, format=-1;
+	doc_init_pformat_dimensions();
 	if (dim->right.x==0 && dim->right.y==0){
 		return -1;
 	}
