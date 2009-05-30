@@ -1435,8 +1435,8 @@ int pdf_page_transform(page_handle * pg_handle, transform_matrix * matrix){
 	if (stream1->val.stream.len==0){
 		return 0;
 	}
-	
-	asprintf(&ct,"q %.2f %.2f %.2f %.2f %.2f %.2f cm ",   (*matrix)[0][0], (*matrix)[0][1], 
+
+	asprintf(&ct,"q %.4f %.4f %.4f %.4f %.4f %.4f cm ",   (*matrix)[0][0], (*matrix)[0][1], 
 								 (*matrix)[1][0], (*matrix)[1][1], 
 								 (*matrix)[2][0], (*matrix)[2][1]);
 	major = pdf_merge_stream(p_pdf,stream1,NULL,ct," Q",NULL);
