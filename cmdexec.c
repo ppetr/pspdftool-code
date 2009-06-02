@@ -94,6 +94,7 @@ typedef struct cmd_param {
 	long number;
 	double real_number;
 	char str[STR_MAX];
+	int set;
 }cmd_param;
 
 typedef struct cmd_param_head{
@@ -133,6 +134,7 @@ typedef struct param{
 	long int_number;
 	double real_number;
 	char * str;
+	int set;
 }param;
 
 typedef struct def_list {
@@ -209,6 +211,7 @@ static int cmd_duplex(page_list_head * p_doc, param params[], cmd_page_list_head
 static int cmd_matrix(page_list_head * p_doc, param params[], cmd_page_list_head * pages);
 static int cmd_spaper(page_list_head * p_doc, param params[], cmd_page_list_head * pages);
 static int cmd_pinfo(page_list_head * p_doc, param params[], cmd_page_list_head * pages);
+static int cmd_frame(page_list_head * p_doc, param params[], cmd_page_list_head * pages);
 
 static param  cmd_read_params[] = {{"name",CMD_TOK_STR,CMD_TOK_UNKNOWN,0,0,NULL}};
 static param  cmd_write_params[] = {{"name",CMD_TOK_STR,CMD_TOK_UNKNOWN,0,0,NULL}};
@@ -291,6 +294,12 @@ static param  cmd_spaper_params[] = {{"name",CMD_TOK_ID,CMD_TOK_UNKNOWN,0,0,NULL
 				     {"x",CMD_TOK_MEASURE, CMD_TOK_UNKNOWN,0,0,NULL},
 				     {"y",CMD_TOK_MEASURE, CMD_TOK_UNKNOWN,0,0,NULL}};
 
+static param cmd_frame_params[] = {{"lx",CMD_TOK_MEASURE,CMD_TOK_MEASURE,0,0,NULL},
+				   {"ly",CMD_TOK_MEASURE,CMD_TOK_MEASURE,0,0,NULL},
+				   {"hx",CMD_TOK_MEASURE,CMD_TOK_MEASURE,0,0,NULL},
+				   {"hy",CMD_TOK_MEASURE,CMD_TOK_MEASURE,0,0,NULL}};
+
+
 #define fill_params(p) p,sizeof(p)/sizeof(param)
 /**definice prikazu*/
 static cmd_entry cmd_commands[]={
@@ -303,7 +312,9 @@ static cmd_entry cmd_commands[]={
 	{"del","delete list",cmd_del,NULL,0,0},
 	{"duplex","",cmd_duplex,fill_params(cmd_duplex_params),0},
 	{"flip","horizontal | vertical",cmd_flip,fill_params(cmd_flip_params),0},
+	{"frame","set page size, this is based on bbox size",cmd_frame,fill_params(cmd_frame_params),0},
 	{"line","draw line to page",cmd_line,fill_params(cmd_line_params),0},
+	{"info","print information about each pages",cmd_pinfo,NULL,0,0},
 	{"matrix","transform by matrix",cmd_matrix,fill_params(cmd_matrix_params),0},
 	{"merge","merge list to one page",cmd_merge,NULL,0},
 	{"modulo", "",cmd_modulo,fill_params(cmd_modulo_params),1},
@@ -324,7 +335,6 @@ static cmd_entry cmd_commands[]={
 	{"text","write text to page",cmd_text,fill_params(cmd_text_params),0},
 	{"write","save list to file",cmd_write,fill_params(cmd_write_params),0},
 	{"spaper","define new paper format",cmd_spaper,fill_params(cmd_spaper_params),0},
-	{"info","print information about each pages",cmd_pinfo,NULL,0,0},
 	{NULL,NULL,0}
 };
 
@@ -674,12 +684,14 @@ static cmd_param * cmd_add_param(cmd_ent_struct * cmd, char * p_name){
 	new_param->prev=cmd->params.prev;
 	new_param->next->prev=new_param;
 	new_param->prev->next=new_param;
+	new_param->set = 0;
 	++cmd->params_count;
 	return new_param;
 }
 
 static void cmd_set_param_val(cmd_param * param, cmd_tok_struct * p_tok){
 	param->type=p_tok->token;
+	param->set = 1;
 	switch(p_tok->token){
 		case CMD_TOK_STR:
 		case CMD_TOK_ID:
@@ -757,6 +769,7 @@ static int cmd_get_args(MYFILE * f, cmd_ent_struct * cmd, cmd_tok_struct * p_tok
 						case CMD_TOK_REAL:
 							param->real_number*=unit_val;
 							param->type=CMD_TOK_MEASURE;
+							param->set = 1;
 							break;
 						default:
 							return -1;
@@ -933,6 +946,7 @@ static int cmd_make_tree(MYFILE * f, cmd_ent_struct_head * cmd_tree, cmd_tok_str
 			    argument=argument->next, ++i)
 			{
 				params[i-2].type =  argument->type;
+				params[i-2].set =  argument->set;
 				asprintf(&(params[i-2].name), "%s", argument->name);
 				switch (argument->type) {
 					case CMD_TOK_INT:
@@ -1084,6 +1098,7 @@ static int cmd_exec_command_(page_list_head * p_doc,cmd_ent_struct * cmd,int ind
 	    argument!=(cmd_param *)(&cmd->params) && i<params_count && argument->name[0]==0;
 	    argument=argument->next,++i)
 	{
+		params[i].set = 1;
 		switch(params[i].type){
 			case CMD_TOK_INT:
 				if(argument->type==CMD_TOK_INT){
@@ -2091,3 +2106,57 @@ static int cmd_pinfo(page_list_head * p_doc, param params[], cmd_page_list_head 
 	return 0;
 }
 
+static int cmd_frame(page_list_head * p_doc, param params[], cmd_page_list_head * pages) {
+	int lx = params[0].real_number;
+	int ly = params[1].real_number;
+	int hx = params[2].real_number;
+	int hy = params[3].real_number;
+
+//TODO:	dellme
+	dimensions dim = {0,0,0,0};
+
+	printf("%d %d %d %d\n", params[0].set, params[1].set, params[2].set, params[3].set);
+	
+	if (!params[0].set && !params[1].set && !params[2].set && !params[3].set) {
+		lx = ly = hx = hy = 0;
+	}
+
+	if (!params[1].set && !params[2].set && !params[3].set) {
+		ly = hx = hy = lx;
+	}
+
+	if (!params[2].set && !params[3].set) {
+		hy = ly;
+		hx = lx;
+	}
+
+	copy_dimensions(&dim,&p_doc->doc->bbox);
+
+	dim.left.x -= lx;
+	dim.left.y -= ly;
+	dim.right.x += hx;
+	dim.right.y += hy;
+
+	
+	set_paper_size(p_doc,&dim);
+	
+	#if 0
+	//if bbox is larger than papersize shrink it
+	
+	if (dim.left.x < p_doc->doc->bbox.left.x)
+		dim.left.x = p_doc->doc->bbox.left.x;
+
+	if (dim.left.y < p_doc->doc->bbox.left.y)
+		dim.left.x = p_doc->doc->bbox.left.x;
+
+	if (dim.right.y > p_doc->doc->bbox.right.y)
+		dim.right.x = p_doc->doc->bbox.right.x;
+
+	if (dim.right.y > p_doc->doc->bbox.right.y)
+		dim.right.x = p_doc->doc->bbox.right.x;
+
+	set_bbox_size(p_doc,&dim);
+	#endif
+
+	return 0;
+}

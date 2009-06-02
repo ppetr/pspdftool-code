@@ -12,6 +12,7 @@ int pages_scale(page_list_head * p_doc, double scale);
 int pages_scaleto(page_list_head * p_doc, dimensions * _paper, double top, double right, double bottom, double left);
 int set_paper_orient(page_list_head * p_doc, orientation orient);
 int set_paper_size(page_list_head * p_doc, dimensions * dim);
+int set_bbox_size(page_list_head * p_doc, dimensions * dim);
 int pages_transform(page_list_head * p_doc, transform_matrix * matrix);
 int pages_crop(page_list_head * p_doc, dimensions * dim);
 int pages_move_xy(page_list_head * p_doc, double x, double y);

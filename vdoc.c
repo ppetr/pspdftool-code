@@ -39,6 +39,15 @@ int set_paper_size(page_list_head * p_doc, dimensions * dim){
 	return 0;
 }
 
+int set_bbox_size(page_list_head * p_doc, dimensions * dim){
+	page_list * page;
+	copy_dimensions(&(p_doc->doc->bbox),dim);
+	for (page=page_next(page_begin(p_doc));page!=page_end(p_doc);page=page_next(page)){
+		copy_dimensions(&(page->page->bbox),dim);
+	}
+	return 0;
+}
+
 int set_paper_orient(page_list_head * p_doc, orientation orient){
 	page_list * page;
 	p_doc->doc->orient = orient;
