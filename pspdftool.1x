@@ -92,9 +92,9 @@ Commands for working with pages selections:
 .TP
 .B apply{page_ranges}
 .TP
-.B new{page_ranges}
+.B new{command}
 
-add new page at the end of list
+adds new page at the end of the list
 
 .TP
 .B del
@@ -237,8 +237,9 @@ display help message and exit
 read commands from file
 
 .SH EXAMPLE
-This section contains some sample re-arrangements. To put two pages on one
-sheet (of A4 paper):
+This section contains some sample re-arrangements. You can read what command will do and how to achieve it
+.sp
+To put two pages on one sheet (of A4 paper):
 .sp
 .ce
 .B nup(2, paper=a4)
@@ -248,37 +249,32 @@ or:
 .ce
 .B nup(1,2, paper=a4,rotate=90)
 .sp
-To re-arrange pages for printing 2-up booklets, use
+To re-arrange pages for printing 2-up booklets:
 .sp
 .ce
 .B book nup(2, paper=a4)
 .sp
-select first five pages and last one from document
+To select first five pages and last one from document
 .sp
 .ce
 .B select{1..5 -1}
 .sp
-delete last page from document
+To reverse page order:
 .sp
 .ce
 .B select{$..1}
 .sp
-reverse page in list
+To delete last page from document:
 .sp
 .ce
 .B apply{-1 del}
 .sp
-reverse pages in document
-.sp
-.ce
-.B modulo(2){-1}
-.sp
-select even pages form document
+To select even pages form document:
 .sp
 .ce
 .B modulo(2){2}
 .sp
-fit page to a4
+To fit page to a4:
 .sp
 .ce
 .B scaleto(a4)
