@@ -44,6 +44,7 @@ int dummy_doc_bbox_update(page_list_head * p_doc){
 	char in[OUT_MAX];
 	FILE * f;
 	int i;
+	int expect_bbox = 1;
 	page_list * page=page_next(page_begin(p_doc));
 	int fd=mkstemp(filein);
 	dimensions dim;
@@ -57,7 +58,15 @@ int dummy_doc_bbox_update(page_list_head * p_doc){
 	}
 	i=0;
 	while (fgets(in,OUT_MAX,f)){
-		if (starts(in,"%%BoundingBox:")){
+		if (starts(in,"%%HiResBoundingBox:")) {
+			/*
+			* This is a work-around for broken versions of Ghostscript,
+			* whose bbox driver prints each line twice. Hopefully, all
+			* versions of GS alternate BoundingBox and HiResBoundingBox.
+			*/
+			expect_bbox = 1;
+			}
+		else if (expect_bbox && starts(in,"%%BoundingBox:")){
 			if (sscanf(in + 14,"%d %d %d %d",&dim.left.x, &dim.left.y, &dim.right.x, &dim.right.y)!=4){
 				message(FATAL, "Wrong BBox format.\n");
 			}
@@ -87,6 +96,7 @@ int dummy_doc_bbox_update(page_list_head * p_doc){
 			fflush(stdout);
 #endif
 			++i;
+			expect_bbox = 0;
 		}
 	}
 	printf("\n");
