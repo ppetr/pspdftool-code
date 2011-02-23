@@ -1,0 +1,11 @@
+pspdftool (0.03.svn79.ucw1) unstable; urgency=low
+
+  * Updated to upstream revision 79.
+
+ -- Martin Mares <mj@ucw.cz>  Wed, 23 Feb 2011 14:59:44 +0100
+
+pspdftool (0.03.svn78.ucw1) unstable; urgency=low
+
+  * Initial release: SVN revision 78 plus my work-around for buggy GS.
+
+ -- Martin Mares <mj@ucw.cz>  Sat, 01 Jan 2011 17:30:50 +0100

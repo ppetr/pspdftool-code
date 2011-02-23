@@ -1,0 +1,47 @@
+#!/usr/bin/make -f
+# Rules for building of pspdftool Debian packages
+# (c) 2011 Martin Mares <mj@ucw.cz>
+
+# Uncomment this to turn on verbose mode.
+#export DH_VERBOSE=1
+
+build: build-stamp
+build-stamp:
+	dh_testdir
+	./autogen.sh
+	./configure --prefix=/usr
+	$(MAKE)
+	touch build-stamp
+
+clean:
+	dh_testdir
+	dh_testroot
+	rm -f build-stamp
+	$(MAKE) clean
+	dh_clean
+
+binary-indep: build
+
+binary-arch: build
+	dh_testdir
+	dh_testroot
+	dh_prep
+	dh_installdirs usr/bin usr/share/man/man1
+
+	$(MAKE) prefix=`pwd`/debian/pspdftool/usr install
+	rm -f debian/pspdftool/usr/share/doc/pspdftool/{COPYING,INSTALL}
+
+	dh_installchangelogs
+	dh_installdocs doc/navod.txt
+	dh_strip
+	dh_compress
+	dh_fixperms
+	dh_installdeb
+	dh_shlibdeps
+	dh_gencontrol
+	dh_md5sums
+	dh_builddeb
+
+binary: binary-indep binary-arch
+
+.PHONY: build clean binary-indep binary-arch binary

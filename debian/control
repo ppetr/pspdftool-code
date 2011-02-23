@@ -1,0 +1,15 @@
+Source: pspdftool
+Section: ucw
+Priority: optional
+Maintainer: Martin Mares <mj@ucw.cz>
+Standards-Version: 2.1.0.0
+Build-Depends: debhelper (>= 7.0)
+
+Package: pspdftool
+Architecture: any
+Depends: ${shlibs:Depends}
+Description: PS and PDF transformation tool
+ This is a simple, but powerfool tool for transforming documents in
+ PostScript or PDF format. It can select a subset of pages, put multiple
+ pages on one sheet, reformat pages to a different paper size, and lots
+ of other magic.
