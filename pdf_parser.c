@@ -227,9 +227,6 @@ int pdf_get_object(MYFILE * f, pdf_object * p_obj, pdf_object_table * xref, pdf_
 					|| strcmp(last_tok->id,"stream")!=0){
 					return -1;
 				}
-				if (stream_len==1){
-					stream_len=0;
-				}
 				switch(mygetc(f)){
 					case EOF:
 						return -1;
