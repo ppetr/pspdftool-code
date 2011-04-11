@@ -325,17 +325,19 @@ int pdf_xreftable_get(MYFILE * f,pdf_object_table * table,long xref_poz, char * 
 		return -1;
 	}
 	while (myfgets(line,LLEN,f,NULL)!=EOF && len>=0){
-		len=strlen(line);
-		--len; 
-		while (isspace((int)(line[len]))){
-			line[len]=0;
+		char *entry=line;
+		while (isspace(*entry))
+			entry++;
+		len=strlen(entry)-1;
+		while (len >= 0 && isspace((unsigned char)(entry[len]))){
+			entry[len]=0;
 			--len;
 		}
-		if(strlen(line)==XREF_ENT_LEN){/*zaznam tabulky ...*/
+		if(strlen(entry)==XREF_ENT_LEN){/*zaznam tabulky ...*/
 			long object_offset_tmp;
 			int object_gen_id_tmp;
 			char object_used_tmp;
-			if (sscanf(line,"%ld %d %c",&object_offset_tmp,&object_gen_id_tmp,&object_used_tmp)!=3){
+			if (sscanf(entry,"%ld %d %c",&object_offset_tmp,&object_gen_id_tmp,&object_used_tmp)!=3){
 				break;
 			}
 			table=object_table_realoc(table,object_id + object_count);
@@ -350,7 +352,7 @@ int pdf_xreftable_get(MYFILE * f,pdf_object_table * table,long xref_poz, char * 
 		}
 		else{
 			long object_begin_tmp, object_count_tmp;
-			if (sscanf(line,"%ld %ld",&object_begin_tmp,&object_count_tmp)!=2){
+			if (sscanf(entry,"%ld %ld",&object_begin_tmp,&object_count_tmp)!=2){
 				break;
 			}
 			object_id=object_begin_tmp;
