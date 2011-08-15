@@ -2,8 +2,8 @@
   
   \section intro_sec Uvod 
   
-  Tento projek si klade za ukol vytvorit komplexni reseni pro
-  predtiskobou upravu dokumentu ve formatech PostScrips a PDF.
+  Tento projekt si klade za ukol vytvorit komplexni reseni pro
+  predtiskovou upravu dokumentu ve formatech PostScript a PDF.
   
   \section install_sec Instalace
   Stahnete si balicek se zdrojovym kodem, rozbalte jej. (tar xvzf jmeno_balicku.tgz).
