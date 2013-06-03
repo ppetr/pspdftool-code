@@ -19,7 +19,7 @@
 		++_where_;}
 #define get_ids_len(a) (sizeof((a))/sizeof(struct id_str))
 #define STR_MAX 255
-#define PARAM_MAX 11
+#define PARAM_MAX 12
 /*definice typu*/
 /*tokens*/
 enum {  CMD_TOK_UNKNOWN,
@@ -259,9 +259,10 @@ static param cmd_nup_params[] = {{"x",CMD_TOK_INT,CMD_TOK_UNKNOWN,0,0,NULL},
 				 {"rotate",CMD_TOK_INT,CMD_TOK_INT,0,0,NULL},
 				 {"by_bbox",CMD_TOK_INT,CMD_TOK_INT,0,0,NULL},
 				 {"paper",CMD_TOK_ID,CMD_TOK_ID,0,0,NULL},
-				 {"frame",CMD_TOK_INT,CMD_TOK_INT,0,0,NULL},
+				 {"frame",CMD_TOK_MEASURE,CMD_TOK_MEASURE,0,-1,NULL},
 				 {"center",CMD_TOK_ID,CMD_TOK_ID,0,0,NULL},
-				 {"scale",CMD_TOK_INT,CMD_TOK_INT,1,0,NULL}};
+				 {"scale",CMD_TOK_INT,CMD_TOK_INT,1,0,NULL},
+				 {"tick",CMD_TOK_MEASURE,CMD_TOK_MEASURE,0,-1,NULL}};
 static param cmd_text_params[] = {{"x",CMD_TOK_MEASURE,CMD_TOK_UNKNOWN,0,0,NULL},
 				 {"y",CMD_TOK_MEASURE,CMD_TOK_UNKNOWN,0,0,NULL},
 				 {"text",CMD_TOK_STR,CMD_TOK_UNKNOWN,0,0,NULL},
@@ -1908,8 +1909,9 @@ static int cmd_orient(page_list_head * p_doc, param params[], cmd_page_list_head
 	return 0;
 }
 static int cmd_nup(page_list_head * p_doc, param params[], cmd_page_list_head * pages){
-	int x,y, orient,rotate,order_bbox,frame, center=1,scale=1;
+	int x,y, orient,rotate,order_bbox, center=1,scale=1;
 	double dx,dy;
+	double frame,tick;
 	dimensions bbox;
 
 
@@ -1941,7 +1943,8 @@ static int cmd_nup(page_list_head * p_doc, param params[], cmd_page_list_head * 
 			message(FATAL,"%s is unknown paper size\n",params[7].str);
 		}
 	}
-	frame=params[8].int_number;
+	frame=params[8].real_number;
+	tick=params[11].real_number;
 	/*TODO: doresit rozmery!!!*/
 	if (params[9].str!=NULL){
 		center=str_to_id(params[9].str,ids_center_nup,get_ids_len(ids_center_nup));
@@ -1950,7 +1953,7 @@ static int cmd_nup(page_list_head * p_doc, param params[], cmd_page_list_head * 
 		}
 	}
 	
-	return pages_nup(p_doc,x,y,&bbox,dx,dy,orient,rotate,order_bbox,frame, center, scale);
+	return pages_nup(p_doc,x,y,&bbox,dx,dy,orient,rotate,order_bbox, frame, tick, center, scale);
 }
 
 

@@ -18,7 +18,7 @@ int ps_dsc_save (page_list_head * p_doc, const char * fnameout);
 int ps_dsc_structure_delete(DSC * dsc);
 PAGE * ps_dsc_page_new(const PAGE * what);
 int ps_dsc_page_delete(PAGE * page);
-int ps_dsc_draw_to_page_line(page_handle * pg_handle, const coordinate * begin, const coordinate * end, int l_width);
+int ps_dsc_draw_to_page_line(page_handle * pg_handle, const coordinate * begin, const coordinate * end, double l_width);
 int ps_dsc_draw_to_page_text(page_handle * pg_handle, const coordinate * where, int size, const char * font, const char * text);
 int ps_dsc_2pages_to_one(PAGE * p1, PAGE * p2);
 int ps_dsc_page_transform(page_handle * pg_handle, transform_matrix * matrix);

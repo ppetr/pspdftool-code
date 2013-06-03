@@ -1255,12 +1255,12 @@ static int listblok (BLOK * head,  int(* todo) (BLOK * part,void * p1, void * p2
 	return 0;
 }
 
-int ps_dsc_draw_to_page_line(page_handle * pg_handle, const coordinate * begin, const coordinate * end,int l_width)
+int ps_dsc_draw_to_page_line(page_handle * pg_handle, const coordinate * begin, const coordinate * end,double l_width)
 {
 	char * line;
 	char * eoln = lend_str[((PAGE *)(pg_handle->page))->eoln];
 	PAGE * page = (PAGE *) (pg_handle->page);
-	if (asprintf(&line,"pstgsave %d pstsetlinewidth pstnewpath %d %d pstmoveto%s %d %d pstlineto pststroke pstgrestore%s",l_width,begin->x,begin->y,eoln,
+	if (asprintf(&line,"pstgsave %.3f pstsetlinewidth pstnewpath %d %d pstmoveto%s %d %d pstlineto pststroke pstgrestore%s",l_width,begin->x,begin->y,eoln,
 				end->x,end->y,eoln)<0
 	||  line==NULL){ 
 		vdoc_errno = VDOC_ERR_LIBC;

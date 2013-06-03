@@ -92,7 +92,7 @@ int pdf_page_crop(page_handle * page, dimensions * dim);
  * \retval 0 OK
  * \retval -1 nastala chyba
  * */
-int pdf_page_line(page_handle * page, const coordinate * begin, const coordinate * end, int width);
+int pdf_page_line(page_handle * page, const coordinate * begin, const coordinate * end, double width);
 
 /**\brief funkce umisti text na stranku \a page
  * \param page stranka

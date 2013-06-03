@@ -32,7 +32,7 @@ int ps_doc_2pages_to_one(page_handle * p1, page_handle * p2){
 	return ps_dsc_2pages_to_one(p1->page, p2->page);
 }
 
-int ps_doc_draw_to_page_line(page_handle * pg_handle, const coordinate * begin, const coordinate * end, int l_width){           
+int ps_doc_draw_to_page_line(page_handle * pg_handle, const coordinate * begin, const coordinate * end, double l_width){           
 	return ps_dsc_draw_to_page_line(pg_handle, begin, end, l_width);
 }
 

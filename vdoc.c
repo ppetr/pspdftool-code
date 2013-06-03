@@ -235,28 +235,46 @@ int pages_crop(page_list_head * p_doc, dimensions * dim){
 }
 
 
-int draw_frame(page_list_head * p_doc, int x, int y, int width, int type, int start_x, int start_y, int off_x, int off_y, int dx, int dy){
+int draw_frame(page_list_head * p_doc, int x, int y, double width, double tick, int start_x, int start_y, int off_x, int off_y, int dx, int dy){
 	int i,j;
 	coordinate begin;
 	coordinate end;
 
-	if (width==0){
+	if (width <= 0){
 		return 0;
 	}
 
-	begin.y=start_y - (dy + off_y)*y + dy;
-	end.y=start_y;
 	for (i=1;i<x;++i){
 		begin.x=start_x + off_x*i + dx * (i - 1) + dx/2.0; 
 		end.x=begin.x;
-		doc_draw_to_page_line(page_next(page_begin(p_doc)),&begin,&end,width);
+		if (tick <= 0){
+			begin.y=start_y - (dy + off_y)*y + dy;
+			end.y=start_y;
+			doc_draw_to_page_line(page_next(page_begin(p_doc)),&begin,&end,width);
+		}else{
+			begin.y=start_y - (dy + off_y)*y + dy;
+			end.y=begin.y + tick;
+			doc_draw_to_page_line(page_next(page_begin(p_doc)),&begin,&end,width);
+			begin.y=start_y - tick;
+			end.y=start_y;
+			doc_draw_to_page_line(page_next(page_begin(p_doc)),&begin,&end,width);
+		}
 	}
-	begin.x=start_x + (dx + off_x)*x - dx; 
-	end.x=start_x;
 	for (j=1;j<y;++j){
 		begin.y=start_y - off_y*j - dy * (j - 1) - dy/2.0;
 		end.y=begin.y;
-		doc_draw_to_page_line(page_next(page_begin(p_doc)),&begin,&end,width);
+		if (tick <= 0){
+			begin.x=start_x + (dx + off_x)*x - dx;
+			end.x=start_x;
+			doc_draw_to_page_line(page_next(page_begin(p_doc)),&begin,&end,width);
+		}else{
+			begin.x=start_x + (dx + off_x)*x - dx;
+			end.x=begin.x - tick;
+			doc_draw_to_page_line(page_next(page_begin(p_doc)),&begin,&end,width);
+			begin.x=start_x;
+			end.x=start_x + tick;
+			doc_draw_to_page_line(page_next(page_begin(p_doc)),&begin,&end,width);
+		}
 	}
 	return 0;
 }
@@ -274,7 +292,7 @@ int pages_move_xy(page_list_head * p_doc, double x, double y){
 
 int pages_nup(page_list_head * p_doc,int x,int y, dimensions * bbox,
 	double dx, double dy, int  orientation ,int rotate,
-	int order_by_bbox, int frame, int center,int en_scale){
+	int order_by_bbox, double frame, double tick, int center,int en_scale){
 	double p_size_x, p_size_y;
 	double n_p_size_x, n_p_size_y;
 	int i,j,k;
@@ -496,7 +514,7 @@ out:
 			_dx = dx;
 			_dy = dy;
 		}
-		draw_frame(selected_pages,x,y,frame,0,(orientation==DOC_O_LANDSCAPE)?(start_x - off_x * (x - 1)):(start_x),_start_y, _off_x, _off_y,_dx,_dy);
+		draw_frame(selected_pages,x,y,frame,tick,(orientation==DOC_O_LANDSCAPE)?(start_x - off_x * (x - 1)):(start_x),_start_y, _off_x, _off_y,_dx,_dy);
 		}
 		pages_list_cat(new_list,selected_pages);
 	}

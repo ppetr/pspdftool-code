@@ -501,7 +501,7 @@ int pages_to_one(page_list_head *pglist){          /*spoji dve posobe jdouci str
 	return 0;
 }
 
-int doc_draw_to_page_line(page_list * pg_handle, const coordinate * begin, const coordinate * end, int width){
+int doc_draw_to_page_line(page_list * pg_handle, const coordinate * begin, const coordinate * end, double width){
 	pg_handle->page=page_handle_copy_w(pg_handle->page);
 	doc_page_transform_(pg_handle);
 	pg_handle->page->bbox.left.x=min(pg_handle->page->bbox.left.x,begin->x);

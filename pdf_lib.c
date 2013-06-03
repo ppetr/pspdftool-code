@@ -1455,12 +1455,12 @@ int pdf_page_transform(page_handle * pg_handle, transform_matrix * matrix){
 	return 0;
 }
 
-int pdf_page_line(page_handle * pg_handle, const coordinate * begin, const coordinate * end, int width){
+int pdf_page_line(page_handle * pg_handle, const coordinate * begin, const coordinate * end, double width){
 	char * ch;
 	int major;
 	pdf_doc_handle * p_pdf = (pdf_doc_handle *)pg_handle->doc->doc;
 	pdf_object * page, * new_page, * pom, * stream;
-	asprintf(&ch," q %d w %d %d m %d %d l S Q", width, begin->x, begin->y, end->x, end->y);
+	asprintf(&ch," q %.3f w %d %d m %d %d l S Q", width, begin->x, begin->y, end->x, end->y);
 	assert(p_pdf!=NULL);
 	pdf_page_to_xobj(pg_handle);
 	get_object_(page,p_pdf,(((pdf_page_handle *)pg_handle->page)->major),(((pdf_page_handle *)pg_handle->page)->minor));

@@ -41,7 +41,7 @@ typedef struct doc_function_implementation {
 	void * (*page_new)(const void *, void *);	/**<funkce pro vytvoreni kopie stranky*/
 	void (*page_delete)(void *);    /**<funkce pro smazani stranky*/
 	int (*page_merge)(page_handle * p1, page_handle * p2);         /**< funkce pro spojeni seznamu stranek do jednne*/
-	int (*draw_line)(page_handle * handle, const coordinate * begin, const coordinate * end, int width); /**<funkce pro implementaci jednoduchych grafickych vystupu na stranku*/          
+	int (*draw_line)(page_handle * handle, const coordinate * begin, const coordinate * end, double width); /**<funkce pro implementaci jednoduchych grafickych vystupu na stranku*/          
 	int (*draw_text)(page_handle * handle, const coordinate * where, const char * text,int size, const char * font); /**<funkce pro implementaci jednoduchych grafickych vystupu na stranku*/          
 	int (*page_transform)(page_handle * handle, transform_matrix * matrix);/**<funkce pro transformaci na strance*/
 	int (*page_crop)(page_handle * handle, dimensions * dimensions);/**<funkce pro nastaveni orezu stranky*/
@@ -119,7 +119,7 @@ int page_handle_delete(page_handle *handle);            /*smaze stranku*/
 int pages_to_one(page_list_head *pglist);          /*spoji list stranek do jedne*/
 
  /*-operace s obsahem stranky*/
-int doc_draw_to_page_line(page_list * handle, const coordinate * begin, const coordinate * end, int width);
+int doc_draw_to_page_line(page_list * handle, const coordinate * begin, const coordinate * end, double width);
 
 int doc_draw_to_page_text(page_list* handle, const coordinate * where,  const char * text,int size, const char * font);
 

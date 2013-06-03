@@ -1,6 +1,6 @@
-pspdftool (0.03.svn79.ucw1) unstable; urgency=low
+pspdftool (0.03.svn84) unstable; urgency=low
 
-  * Updated to upstream revision 79.
+  * Updated to upstream revision 84.
 
  -- Martin Mares <mj@ucw.cz>  Wed, 23 Feb 2011 14:59:44 +0100
 
